@@ -163,9 +163,9 @@ if (!$load) {
 
 $lang = $modx->lexicon->fetch('ui_ace');
 
-$modx->regClientStartupScript($ace->config['assetsUrl'].'ace.js');
-$modx->regClientStartupScript($ace->config['assetsUrl'].'theme/'.$modx->getOption('ace.theme', null, 'textmate').'.js');
-$modx->regClientStartupScript($ace->config['assetsUrl'].'mode/'.$mode.'.js');
+$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/ace.js');
+$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/theme-'.$modx->getOption('ace.theme', null, 'textmate').'.js');
+$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/mode-'.$mode.'.js');
 $modx->regClientStartupScript($ace->config['assetsUrl'].'modx.codearea.js');
 
 $modx->regClientStartupScript('<script type="text/javascript">'."
