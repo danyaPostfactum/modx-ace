@@ -1,0 +1,35 @@
+Changelog for Ace integration into MODx Revolution.
+
+
+Ace 1.2.1
+====================================
+- Changed: Assets are moved to manager folder
+- Added: Font size setting
+- Added: "Github" theme
+- Added: Support of html5 drag'n'drop (accepting of dropped text)
+- Added: XML / HTML tag autoclosing
+
+
+Ace 1.2.0
+====================================
+- Removed: Some unnecessary options
+- Changed: Editor options are moved to system settings
+- Fixed: Multiple little editor bugs
+- Added: Add missing "OnFileEditFormPrerender" event to MODx
+- Added: Multiline editing
+- Added: Advanced find/replace window
+
+
+Ace 1.1.0
+====================================
+- Fixed: Fatal error on document create event
+- Fixed: Changing of properties has no effect
+- Added: File edition support
+- Added: MODx tree elements drag'n'drop support
+- Added: Auto-assigning which_element_editor to Ace
+
+
+Ace 1.0.0
+====================================
+- Added: Plugin properties to adjust how Ace behaves
+- Initial commit
