@@ -5,9 +5,10 @@ Ace 1.2.1
 ====================================
 - Changed: Assets are moved to manager folder
 - Added: Font size setting
-- Added: "Github" theme
+- Added: "GitHub" theme
 - Added: Support of html5 drag'n'drop (accepting of dropped text)
 - Added: XML / HTML tag autoclosing
+- Fixed: broken en lexicon and php 5.3 incompatibility
 
 
 Ace 1.2.0

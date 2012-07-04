@@ -14,7 +14,7 @@ set_time_limit(0);
 define('PKG_NAME','Ace');
 define('PKG_NAMESPACE','ace');
 define('PKG_VERSION','1.2.1');
-define('PKG_RELEASE','rc2');
+define('PKG_RELEASE','rc3');
  
 /* define sources */
 $root = dirname(dirname(__FILE__)).'/';
