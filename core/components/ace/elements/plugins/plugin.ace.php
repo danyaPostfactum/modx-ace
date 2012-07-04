@@ -161,7 +161,8 @@ if (!$load) {
     return;
 }
 
-$lang = $modx->lexicon->fetch('ui_ace');
+$lang = $modx->toJSON($modx->lexicon->fetch('ui_ace'));
+$lang = $lang ? $lang : '{}';
 
 $modx->regClientStartupScript($ace->config['assetsUrl'].'ace/ace.js');
 $modx->regClientStartupScript($ace->config['assetsUrl'].'ace/theme-'.$modx->getOption('ace.theme', null, 'textmate').'.js');
@@ -171,7 +172,7 @@ $modx->regClientStartupScript($ace->config['assetsUrl'].'modx.codearea.js');
 $modx->regClientStartupScript('<script type="text/javascript">'."
     // <![CDATA[
     Ext.onReady(function() {
-        var TextArea = Ext.getCmp('{$field}');
+        var TextArea = Ext.getCmp('$field');
 		var CodeArea = MODx.load({
 			xtype: 'modx-codearea',
 			anchor: TextArea.anchor,
@@ -179,7 +180,7 @@ $modx->regClientStartupScript('<script type="text/javascript">'."
 			height: TextArea.height,
 			name: TextArea.name,
 			value: TextArea.getValue(),
-			mode: '{$mode}'
+			mode: '$mode'
 		});
 		
         TextArea.el.dom.name = '';
@@ -187,7 +188,7 @@ $modx->regClientStartupScript('<script type="text/javascript">'."
         CodeArea.render(TextArea.el.dom.parentNode);
 		CodeArea.on('change', function(e){TextArea.fireEvent('keydown', e);});
 	});
-	Ext.apply(MODx.lang, {$modx->toJSON($lang)});
+	Ext.apply(MODx.lang, $lang);
     // ]]>
 ".'</script>', true);
 
