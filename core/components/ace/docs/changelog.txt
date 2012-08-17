@@ -1,5 +1,8 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.2.1
+====================================
+- Added: German translation
 
 Ace 1.2.1
 ====================================
