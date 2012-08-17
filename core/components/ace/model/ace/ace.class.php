@@ -18,13 +18,13 @@ class Ace {
         $this->modx =& $modx;
 
         $corePath = $this->modx->getOption('ace.core_path',$config,$this->modx->getOption('core_path').'components/ace/');
-        $managerUrl = $this->modx->getOption('ace.manager_url',$config,$this->modx->getOption('manager_url').'components/ace/');
+        $assetsUrl = $this->modx->getOption('ace.assets_url',$config,$this->modx->getOption('assets_url').'components/ace/');
 
         $this->config = array_merge(array(
             'corePath' => $corePath,
             'modelPath' => $corePath.'model/',
-            'managerUrl' => $managerUrl,
-            'assetsUrl' => $managerUrl.'assets/'
+            'assetsUrl' => $assetsUrl,
+            'jsUrl' => $assetsUrl.'js/',
         ),$config);
 
         $this->modx->addPackage('ace',$this->config['modelPath']);
