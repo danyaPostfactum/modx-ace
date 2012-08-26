@@ -13,6 +13,10 @@ class Ace {
      * @var array An array of configuration options
      */
     public $config = array();
+    /**
+     * @var bool A flag to prevent double script registering
+     */
+    public $assetsLoaded = false;
 
     function __construct(modX &$modx,array $config = array()) {
         $this->modx =& $modx;
@@ -22,12 +26,23 @@ class Ace {
 
         $this->config = array_merge(array(
             'corePath' => $corePath,
-            'modelPath' => $corePath.'model/',
             'managerUrl' => $managerUrl,
-            'assetsUrl' => $managerUrl.'assets/'
         ),$config);
 
-        $this->modx->addPackage('ace',$this->config['modelPath']);
+        $this->modx->addPackage('ace', $this->config['corePath'].'model/');
         $this->modx->lexicon->load('ace:default');
+    }
+
+    public function initialize() {
+        if (!$this->assetsLoaded) {
+
+            $lang = $this->modx->toJSON($this->modx->lexicon->fetch('ui_ace'));
+            $lang = $lang ? $lang : '{}';
+
+            $this->modx->regClientStartupScript('<script>Ext.apply(MODx.lang, '.$lang.');</script>', true);
+            $this->modx->regClientStartupScript($this->config['managerUrl'].'assets/ace/ace.js');
+            $this->modx->regClientStartupScript($this->config['managerUrl'].'assets/modx.codearea.js');
+        }
+        $this->assetsLoaded = true;
     }
 }
