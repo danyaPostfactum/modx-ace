@@ -26,18 +26,6 @@ if ($pluginid= $object->get('id')) {
                 $setting->save();
             }
             unset($setting);
-            // add missing event in MODx < 2.2.3
-			$event = $object->xpdo->getObject('modEvent', array('name' => 'OnFileEditFormPrerender'));
-			if (!$event) {
-				$object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to add missing OnFileEditFormPrerender event to MODx.');
-				$event = $object->xpdo->newObject('modEvent');
-				$event->fromArray(array (
-				  'name' => 'OnFileEditFormPrerender',
-				  'service' => 1,
-				  'groupname' => 'System',
-				), '', true, true);
-				$event->save();
-			}
             break;
         case xPDOTransport::ACTION_UNINSTALL:
             $success= true;
