@@ -24,7 +24,7 @@ $_lang['ui_ace.whole_word'] = 'Целые слова';
 $_lang['area_general'] = 'Основные настройки';
 
 $_lang['setting_ace.theme'] = 'Тема редактора';
-$_lang['setting_ace.theme_desc'] = 'Доступные темы: chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse, github, idle_fingers, kr_theme, merbivore, merbivore_soft, mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, textmate, tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight, vibrant_ink.';
+$_lang['setting_ace.theme_desc'] = 'Доступные темы: ambiance, chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse, github, idle_fingers, kr_theme, merbivore, merbivore_soft, mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, textmate, tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight, vibrant_ink.';
 $_lang['setting_ace.word_wrap'] = 'Перенос строк';
 $_lang['setting_ace.word_wrap_desc'] = 'Переносить длинные строки.';
 $_lang['setting_ace.font_size'] = 'Размер шрифта';
