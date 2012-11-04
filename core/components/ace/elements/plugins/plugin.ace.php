@@ -2,209 +2,155 @@
 /**
  * Ace Source Editor Plugin
  *
- * Events: OnRichTextEditorRegister, OnRichTextEditorInit, OnSnipFormPrerender,
+ * Events: OnManagerPageBeforeRender, OnRichTextEditorRegister, OnSnipFormPrerender,
  * OnTempFormPrerender, OnChunkFormPrerender, OnPluginFormPrerender,
  * OnFileCreateFormPrerender, OnFileEditFormPrerender, OnDocFormRender
  *
- * @author Danil Kostin <danya@postfactum@gmail.com>
+ * @author Danil Kostin <danya.postfactum(at)gmail.com>
  *
  * @package ace
  */
 
 if ($modx->event->name == 'OnRichTextEditorRegister') {
-	$modx->event->output('Ace');
-	return;
+    $modx->event->output('Ace');
+    return;
 }
 
-$useEditor = $modx->getOption('use_editor',null,false);
-
-if (!$useEditor) {
-	return;
-}
-
-$whichEditor = $modx->getOption('which_editor',null,'');
-$whichElementEditor = $modx->getOption('which_element_editor',null,'');
-
-switch ($modx->event->name)
-{
-	case 'OnSnipFormPrerender':
-	case 'OnTempFormPrerender':
-	case 'OnChunkFormPrerender':
-	case 'OnPluginFormPrerender':
-	case 'OnFileCreateFormPrerender':
-	case 'OnFileEditFormPrerender':
-		if ($whichElementEditor != 'Ace') {
-			return;
-		}
-		break;
-	case 'OnDocFormRender':
-		if (($whichElementEditor != 'Ace') || ($scriptProperties['resource']->get('richtext') == 1) || ($scriptProperties['resource']->get('class_key') != 'modDocument')){
-			return;
-		}
-		break;
-	case 'OnRichTextEditorInit':
-		if (($whichEditor != 'Ace') || (!$scriptProperties['resource'])) {
-			return;
-		}
-		break;
-	default:
-		return;
-		break;
+if ($modx->getOption('which_element_editor',null,'Ace') !== 'Ace') {
+    return;
 }
 
 $ace = $modx->getService('ace','Ace',$modx->getOption('ace.core_path',null,$modx->getOption('core_path').'components/ace/').'model/ace/');
 
-if (!($ace instanceof Ace)) {
-	return;
-}
+$ace->initialize();
 
-$load = true;
-
-switch ($modx->event->name) {
-    case 'OnSnipFormPrerender':
-		$field = 'modx-snippet-snippet';
-		$panel = 'modx-panel-snippet';
-		$mode = 'php';
-		break;
-	case 'OnTempFormPrerender':
-		$field = 'modx-template-content';
-		$panel = 'modx-panel-template';
-	    $mode = 'html';
-	    break;
-	case 'OnChunkFormPrerender':
-		$field = 'modx-chunk-snippet';
-		$panel = 'modx-panel-chunk';
-	    $mode = 'html';
-	    break;
-	case 'OnPluginFormPrerender':
-		$field = 'modx-plugin-plugincode';
-		$panel = 'modx-panel-plugin';
-	    $mode = 'php';
-	    break;
-	case 'OnFileCreateFormPrerender':
-		$field = 'modx-file-content';
-		$panel = 'modx-panel-file-create';
-	    $mode = 'text';
-	    break;
-	case 'OnFileEditFormPrerender':
-		$field = 'modx-file-content';
-		$panel = 'modx-panel-file-edit';
-		switch (pathinfo($scriptProperties['file'], PATHINFO_EXTENSION))
-		{
-			case 'tpl':
-			case 'html':
-				$mode = 'html';
-				break;
-			case 'css':
-				$mode = 'css';
-				break;
-			case 'svg':
-    			$mode = 'svg';
-				break;
-			case 'xml':
-				$mode = 'xml';
-				break;
-			case 'js':
-				$mode = 'javascript';
-				break;
-    		case 'json':
-				$mode = 'json';
-				break;
-			case 'php':
-				$mode = 'php';
-				break;
-			case 'sql':
-				$mode = 'sql';
-				break;
-			case 'txt':
-			default:
-				$mode = 'text';
-		}
-		break;
-	case 'OnDocFormRender':
-	case 'OnRichTextEditorInit':
-		$field = 'ta';
-		$panel = 'modx-panel-resource';
-		switch ($scriptProperties['resource']->get('contentType')){
-		    case 'text/html':
-				$mode = 'html';
-				break;
-		    case 'text/css':
-				$mode = 'css';
-				break;
-    	    case 'image/svg+xml':
-				$mode = 'svg';
-				break;
-		    case 'text/xml':
-		    case 'application/xml':
-		    case 'application/xhtml+xml':
-		    case 'application/rss+xml':
-				$mode = 'xml';
-				break;
-		    case 'text/javascript':
-		    case 'application/javascript':
-				$mode = 'javascript';
-				break;
-		    case 'application/json':
-				$mode = 'json';
-				break;
-			case 'text/plain':
-			default:
-				$mode = 'text';
-		}
-		break;
-	default:
-		$load = false;
-}
-
-if (!$load) {
-    return;
-}
-
-$lang = $modx->toJSON($modx->lexicon->fetch('ui_ace'));
-$lang = $lang ? $lang : '{}';
-
-$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/ace.js');
-$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/theme-'.$modx->getOption('ace.theme', null, 'textmate').'.js');
-$modx->regClientStartupScript($ace->config['assetsUrl'].'ace/mode-'.$mode.'.js');
-$modx->regClientStartupScript($ace->config['assetsUrl'].'modx.codearea.js');
-
-$modx->regClientStartupScript('<script type="text/javascript">'."
-    // <![CDATA[
-    Ext.onReady(function() {
-        var TextArea = Ext.getCmp('$field');
-		var CodeArea = MODx.load({
-			xtype: 'modx-codearea',
-			anchor: TextArea.anchor,
-			width: 'auto',
-			height: TextArea.height,
-			name: TextArea.name,
-			value: TextArea.getValue(),
-			mode: '$mode'
-		});
-		
-        TextArea.el.dom.name = '';
-        TextArea.el.setStyle('display', 'none');
-        CodeArea.render(TextArea.el.dom.parentNode);
-		CodeArea.on('change', function(e){TextArea.fireEvent('keydown', e);});
-	});
-	Ext.apply(MODx.lang, $lang);
-    // ]]>
-".'</script>', true);
-
-$modx->regClientCSS('<style type="text/css">'."
-    .x-form-textarea{
+if ($modx->event->name == 'OnManagerPageBeforeRender') {
+    $modx->controller->addHtml('<style>'."
+        .x-form-textarea{
         border-radius:2px;
         position: relative;
         background-color: #fbfbfb;
         background-image: none;
         border: 1px solid;
         border-color: #CCCCCC;
-    }
-    .x-form-focus {
+        }
+        .x-form-focus {
         border-color: #658F1A;
         background-color: #FFFFFF;
-    }
-".'</style>');
+        }
+    ".'</style>');
+}
+
+switch ($modx->event->name) {
+    case 'OnSnipFormPrerender':
+        $field = 'modx-snippet-snippet';
+        $mimeType = 'application/x-php';
+        break;
+    case 'OnTempFormPrerender':
+        $field = 'modx-template-content';
+        $mimeType = 'text/html';
+        break;
+    case 'OnChunkFormPrerender':
+        $field = 'modx-chunk-snippet';
+        $mimeType = 'text/html';
+        break;
+    case 'OnPluginFormPrerender':
+        $field = 'modx-plugin-plugincode';
+        $mimeType = 'application/x-php';
+        break;
+    case 'OnFileCreateFormPrerender':
+        $field = 'modx-file-content';
+        $mimeType = 'text/plain';
+        break;
+    case 'OnFileEditFormPrerender':
+        $field = 'modx-file-content';
+        switch (pathinfo($scriptProperties['file'], PATHINFO_EXTENSION))
+        {
+            case 'tpl':
+            case 'html':
+                $mimeType = 'text/html';
+                break;
+            case 'css':
+                $mimeType = 'text/css';
+                break;
+            case 'scss':
+                $mimeType = 'text/x-scss';
+                break;
+            case 'less':
+                $mimeType = 'text/x-less';
+                break;
+            case 'svg':
+                $mimeType = 'image/svg+xml';
+                break;
+            case 'xml':
+                $mimeType = 'application/xml';
+                break;
+            case 'js':
+                $mimeType = 'application/javascript';
+                break;
+            case 'json':
+                $mimeType = 'application/json';
+                break;
+            case 'php':
+                $mimeType = 'application/x-php';
+                break;
+            case 'sql':
+                $mimeType = 'text/x-sql';
+                break;
+            case 'txt':
+            default:
+                $mimeType = 'text/plain';
+        }
+        break;
+    case 'OnDocFormRender':
+        if ($modx->getOption('use_editor',null,true)) {
+            switch ($scriptProperties['mode'])
+            {
+                case modSystemEvent::MODE_NEW:
+                    if ($modx->getOption('richtext_default', null)) return;
+                    break;
+                case modSystemEvent::MODE_UPD:
+                    if ($scriptProperties['resource']->get('richtext')) return;
+                    break;
+            }
+        }
+        if ($scriptProperties['resource']->get('class_key') !== 'modDocument') return;
+        $field = 'ta';
+        $mimeType = $scriptProperties['resource']->get('contentType');
+        break;
+    default:
+        return;
+}
+
+$modx->regClientStartupScript('<script>'."
+    Ext.onReady(function() {
+        var TextArea = Ext.getCmp('$field');
+        var TextEditor = MODx.load({
+            xtype: 'modx-texteditor',
+            anchor: TextArea.anchor,
+            width: 'auto',
+            height: TextArea.height,
+            name: TextArea.name,
+            value: TextArea.getValue(),
+            mimeType: '$mimeType'
+        });
+
+        TextArea.el.dom.name = '';
+        TextArea.el.setStyle('display', 'none');
+        TextEditor.render(TextArea.el.dom.parentNode);
+        TextEditor.on('keydown', function(e){TextArea.fireEvent('keydown', e);});
+        MODx.load({
+            xtype: 'modx-treedrop',
+            target: TextEditor,
+            targetEl: TextEditor.el,
+            onInsert: (function(s){
+                this.insertAtCursor(s);
+                this.focus();
+                return true;
+            }).bind(TextEditor),
+            iframe: true
+        });
+    });
+".'</script>', true);
 
 return;
