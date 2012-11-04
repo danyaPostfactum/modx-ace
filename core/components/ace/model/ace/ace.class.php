@@ -41,7 +41,7 @@ class Ace {
 
             $this->modx->controller->addHtml('<script>Ext.apply(MODx.lang, '.$lang.');</script>');
             $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/ace/ace.js');
-            $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/modx.codearea.js');
+            $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/modx.texteditor.js');
         }
         $this->assetsLoaded = true;
     }
