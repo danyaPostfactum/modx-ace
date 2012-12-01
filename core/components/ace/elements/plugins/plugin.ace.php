@@ -4,7 +4,8 @@
  *
  * Events: OnManagerPageBeforeRender, OnRichTextEditorRegister, OnSnipFormPrerender,
  * OnTempFormPrerender, OnChunkFormPrerender, OnPluginFormPrerender,
- * OnFileCreateFormPrerender, OnFileEditFormPrerender, OnDocFormRender
+ * OnFileCreateFormPrerender, OnFileEditFormPrerender, OnDocFormRender,
+ * OnTVInputRenderList
  *
  * @author Danil Kostin <danya.postfactum(at)gmail.com>
  *
@@ -17,6 +18,11 @@ if ($modx->event->name == 'OnRichTextEditorRegister') {
 }
 
 if ($modx->getOption('which_element_editor',null,'Ace') !== 'Ace') {
+    return;
+}
+
+if ($modx->event->name == 'OnTVInputRenderList') {
+    $modx->event->output($modx->getOption('ace.core_path',null,$modx->getOption('core_path').'components/ace/').'elements/tv/input/');
     return;
 }
 
