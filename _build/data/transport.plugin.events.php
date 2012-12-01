@@ -73,4 +73,12 @@ $events[9]->fromArray(array(
     'propertyset' => 0
 ),'',true,true);
 
+$events[10] = $modx->newObject('modPluginEvent');
+$events[10]->fromArray(array(
+    'pluginid' => 1,
+    'event' => 'OnTVInputRenderList',
+    'priority' => 0,
+    'propertyset' => 0
+),'',true,true);
+
 return $events;
