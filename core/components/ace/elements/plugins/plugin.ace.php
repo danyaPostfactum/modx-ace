@@ -23,6 +23,7 @@ if ($modx->getOption('which_element_editor',null,'Ace') !== 'Ace') {
 
 if ($modx->event->name == 'OnTVInputRenderList') {
     $modx->event->output($modx->getOption('ace.core_path',null,$modx->getOption('core_path').'components/ace/').'elements/tv/input/');
+    return;
 }
 
 $ace = $modx->getService('ace','Ace',$modx->getOption('ace.core_path',null,$modx->getOption('core_path').'components/ace/').'model/ace/');
