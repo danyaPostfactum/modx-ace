@@ -49,7 +49,9 @@ $plugin= $modx->newObject('modPlugin');
 $plugin->set('id',1);
 $plugin->set('name', PKG_NAME);
 $plugin->set('description', 'Ace code editor plugin for MODx Revolution');
-$plugin->set('plugincode', file_get_contents($sources['source_core'].'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php'));
+$plugin->set('static', true);
+$plugin->set('static_file', '[[++core_path]]components/'.PKG_NAMESPACE.'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php');
+//$plugin->set('plugincode', file_get_contents($sources['source_core'].'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php'));
 $plugin->set('category', 0);
 
 /* add plugin events */
