@@ -23,7 +23,7 @@ $sources = array(
     'build' => $root . '_build/',
     'data' => $root . '_build/data/',
     'lexicon' => $root . 'core/components/'.PKG_NAMESPACE.'/lexicon/',
-    'docs' => $root.'core/components/'.PKG_NAMESPACE.'/docs/',
+    'documents' => $root.'core/components/'.PKG_NAMESPACE.'/documents/',
     'elements' => $root.'core/components/'.PKG_NAMESPACE.'/elements/',
     'source_manager' => $root.'manager/components/'.PKG_NAMESPACE,
     'source_core' => $root.'core/components/'.PKG_NAMESPACE,
@@ -49,17 +49,17 @@ $plugin= $modx->newObject('modPlugin');
 $plugin->set('id',1);
 $plugin->set('name', PKG_NAME);
 $plugin->set('description', 'Ace code editor plugin for MODx Revolution');
-$plugin->set('plugincode', file_get_contents($sources['source_core'] . '/elements/plugins/plugin.'.PKG_NAMESPACE.'.php'));
+$plugin->set('plugincode', file_get_contents($sources['source_core'].'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php'));
 $plugin->set('category', 0);
 
 /* add plugin events */
 $events = include $sources['data'].'transport.plugin.events.php';
 if (is_array($events) && !empty($events)) {
     $plugin->addMany($events);
+    $modx->log(xPDO::LOG_LEVEL_INFO,'Packaged in '.count($events).' Plugin Events.'); flush();
 } else {
-    $modx->log(xPDO::LOG_LEVEL_ERROR,'Could not find plugin events!');
+    $modx->log(xPDO::LOG_LEVEL_ERROR,'Could not find plugin events!'); flush();
 }
-$modx->log(xPDO::LOG_LEVEL_INFO,'Packaged in '.count($events).' Plugin Events.'); flush();
 unset($events);
 
 /* load plugin properties */
@@ -119,9 +119,9 @@ unset($settings,$setting);
  
 $modx->log(modX::LOG_LEVEL_INFO,'Adding package attributes and setup options...');
 $builder->setPackageAttributes(array(
-    'license' => file_get_contents($sources['docs'] . 'license.txt'),
-    'readme' => file_get_contents($sources['docs'] . 'readme.txt'),
-    'changelog' => file_get_contents($sources['docs'] . 'changelog.txt')
+    'license' => file_get_contents($sources['documents'] . 'license.txt'),
+    'readme' => file_get_contents($sources['documents'] . 'readme.txt'),
+    'changelog' => file_get_contents($sources['documents'] . 'changelog.txt')
    // 'setup-options' => array(
    //     'source' => $sources['build'].'setup.options.php',
    // ),
