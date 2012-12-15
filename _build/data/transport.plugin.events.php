@@ -1,73 +1,71 @@
 <?php
 $events = array();
 
-$events[1] = $modx->newObject('modPluginEvent');
-$events[1]->fromArray(array(
-    'pluginid' => 1,
+$events['OnChunkFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnChunkFormPrerender']->fromArray(array(
     'event' => 'OnChunkFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[2] = $modx->newObject('modPluginEvent');
-$events[2]->fromArray(array(
-    'pluginid' => 1,
+$events['OnPluginFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnPluginFormPrerender']->fromArray(array(
     'event' => 'OnPluginFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[3] = $modx->newObject('modPluginEvent');
-$events[3]->fromArray(array(
-    'pluginid' => 1,
+$events['OnSnipFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnSnipFormPrerender']->fromArray(array(
     'event' => 'OnSnipFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[4] = $modx->newObject('modPluginEvent');
-$events[4]->fromArray(array(
-    'pluginid' => 1,
+$events['OnTempFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnTempFormPrerender']->fromArray(array(
     'event' => 'OnTempFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[5] = $modx->newObject('modPluginEvent');
-$events[5]->fromArray(array(
-    'pluginid' => 1,
+$events['OnFileEditFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnFileEditFormPrerender']->fromArray(array(
     'event' => 'OnFileEditFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[6] = $modx->newObject('modPluginEvent');
-$events[6]->fromArray(array(
-    'pluginid' => 1,
+$events['OnFileCreateFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnFileCreateFormPrerender']->fromArray(array(
     'event' => 'OnFileCreateFormPrerender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[7] = $modx->newObject('modPluginEvent');
-$events[7]->fromArray(array(
-    'pluginid' => 1,
+$events['OnDocFormPrerender'] = $modx->newObject('modPluginEvent');
+$events['OnDocFormPrerender']->fromArray(array(
+    'event' => 'OnDocFormPrerender',
+    'priority' => 0,
+    'propertyset' => 0
+),'',true,true);
+
+$events['OnDocFormRender'] = $modx->newObject('modPluginEvent');
+$events['OnDocFormRender']->fromArray(array(
     'event' => 'OnDocFormRender',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[8] = $modx->newObject('modPluginEvent');
-$events[8]->fromArray(array(
-    'pluginid' => 1,
+$events['OnRichTextEditorRegister'] = $modx->newObject('modPluginEvent');
+$events['OnRichTextEditorRegister']->fromArray(array(
     'event' => 'OnRichTextEditorRegister',
     'priority' => 0,
     'propertyset' => 0
 ),'',true,true);
 
-$events[9] = $modx->newObject('modPluginEvent');
-$events[9]->fromArray(array(
-    'pluginid' => 1,
+$events['OnManagerPageBeforeRender'] = $modx->newObject('modPluginEvent');
+$events['OnManagerPageBeforeRender']->fromArray(array(
     'event' => 'OnManagerPageBeforeRender',
     'priority' => 0,
     'propertyset' => 0
