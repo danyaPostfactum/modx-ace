@@ -199,7 +199,7 @@ MODx.form.Ace = Ext.extend(Ext.form.Ace, {
 
     fontSize : MODx.config['ace.font_size'] || '13px',
 
-    useWrapMode : MODx.config['ace.word_wrap'] === true,
+    useWrapMode : MODx.config['ace.word_wrap'] == true,
 
     initComponent : function() {
         MODx.form.Ace.superclass.initComponent.call(this);
