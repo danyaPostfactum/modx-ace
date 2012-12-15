@@ -13,8 +13,8 @@ set_time_limit(0);
 /* define version */
 define('PKG_NAME','Ace');
 define('PKG_NAMESPACE','ace');
-define('PKG_VERSION','1.3.0');
-define('PKG_RELEASE','rc3');
+define('PKG_VERSION','1.3.1');
+define('PKG_RELEASE','pl');
  
 /* define sources */
 $root = dirname(dirname(__FILE__)).'/';
