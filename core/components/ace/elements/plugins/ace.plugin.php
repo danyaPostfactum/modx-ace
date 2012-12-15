@@ -4,7 +4,7 @@
  *
  * Events: OnManagerPageBeforeRender, OnRichTextEditorRegister, OnSnipFormPrerender,
  * OnTempFormPrerender, OnChunkFormPrerender, OnPluginFormPrerender,
- * OnFileCreateFormPrerender, OnFileEditFormPrerender, OnDocFormRender
+ * OnFileCreateFormPrerender, OnFileEditFormPrerender, OnDocFormPrerender
  *
  * @author Danil Kostin <danya.postfactum(at)gmail.com>
  *
@@ -102,21 +102,26 @@ switch ($modx->event->name) {
                 $mimeType = 'text/plain';
         }
         break;
-    case 'OnDocFormRender':
-        if ($modx->getOption('use_editor',null,true)) {
-            switch ($scriptProperties['mode'])
-            {
-                case modSystemEvent::MODE_NEW:
-                    if ($modx->getOption('richtext_default', null)) return;
-                    break;
-                case modSystemEvent::MODE_UPD:
-                    if ($scriptProperties['resource']->get('richtext')) return;
-                    break;
+    case 'OnDocFormPrerender':
+        if ($modx->getOption('use_editor')){
+            if (isset($scriptProperties['resource'])) {
+                    $richText = $scriptProperties['resource']->get('richtext');
+                    $classKey = $scriptProperties['resource']->get('class_key');
+            } else {
+                    $richText = $modx->getOption('richtext_default');
+                    $classKey = $modx->getOption('class_key', $_REQUEST, 'modDocument');
+            }
+            if ($richText || $classKey !== 'modDocument') {
+                return;
             }
         }
-        if ($scriptProperties['resource']->get('class_key') !== 'modDocument') return;
+        if (isset($scriptProperties['resource'])) {
+            $contentType = $modx->getObject('modContentType', $scriptProperties['resource']->get('content_type'));
+        } else {
+            $contentType = $modx->getObject('modContentType', $modx->getOption('default_content_type'));
+        }
         $field = 'ta';
-        $mimeType = $scriptProperties['resource']->get('contentType');
+        $mimeType = $contentType ? $contentType->get('mime_type') : 'text/plain';
         break;
     default:
         return;

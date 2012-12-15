@@ -50,13 +50,6 @@ $events['OnDocFormPrerender']->fromArray(array(
     'propertyset' => 0
 ),'',true,true);
 
-$events['OnDocFormRender'] = $modx->newObject('modPluginEvent');
-$events['OnDocFormRender']->fromArray(array(
-    'event' => 'OnDocFormRender',
-    'priority' => 0,
-    'propertyset' => 0
-),'',true,true);
-
 $events['OnRichTextEditorRegister'] = $modx->newObject('modPluginEvent');
 $events['OnRichTextEditorRegister']->fromArray(array(
     'event' => 'OnRichTextEditorRegister',
