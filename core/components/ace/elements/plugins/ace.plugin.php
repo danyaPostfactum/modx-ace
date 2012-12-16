@@ -127,35 +127,37 @@ switch ($modx->event->name) {
         return;
 }
 
-$modx->regClientStartupScript('<script>'."
+$modx->controller->addHtml('<script>'."
     Ext.onReady(function() {
-        var TextArea = Ext.getCmp('$field');
-        var TextEditor = MODx.load({
-            xtype: 'modx-texteditor',
-            anchor: TextArea.anchor,
-            width: 'auto',
-            height: TextArea.height,
-            name: TextArea.name,
-            value: TextArea.getValue(),
-            mimeType: '$mimeType'
-        });
+        setTimeout(function(){
+            var textArea = Ext.getCmp('$field');
+            var textEditor = MODx.load({
+                xtype: 'modx-texteditor',
+                anchor: textArea.anchor,
+                width: 'auto',
+                height: textArea.height,
+                name: textArea.name,
+                value: textArea.getValue(),
+                mimeType: '$mimeType'
+            });
 
-        TextArea.el.dom.name = '';
-        TextArea.el.setStyle('display', 'none');
-        TextEditor.render(TextArea.el.dom.parentNode);
-        TextEditor.on('keydown', function(e){TextArea.fireEvent('keydown', e);});
-        MODx.load({
-            xtype: 'modx-treedrop',
-            target: TextEditor,
-            targetEl: TextEditor.el,
-            onInsert: (function(s){
-                this.insertAtCursor(s);
-                this.focus();
-                return true;
-            }).bind(TextEditor),
-            iframe: true
+            textArea.el.dom.removeAttribute('name');
+            textArea.el.setStyle('display', 'none');
+            textEditor.render(textArea.el.dom.parentNode);
+            textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
+            MODx.load({
+                xtype: 'modx-treedrop',
+                target: textEditor,
+                targetEl: textEditor.el,
+                onInsert: (function(s){
+                    this.insertAtCursor(s);
+                    this.focus();
+                    return true;
+                }).bind(textEditor),
+                iframe: true
+            });
         });
     });
-".'</script>', true);
+".'</script>');
 
 return;
