@@ -1,4 +1,4 @@
-Ext.form.Ace = Ext.extend(Ext.form.TextField,  {
+Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
 
     growMin : 60,
 
@@ -26,10 +26,10 @@ Ext.form.Ace = Ext.extend(Ext.form.TextField,  {
 
     value : '',
 
-    style: 'padding:0;line-height:1.3',
+    style: 'position:relative;padding:0;line-height:1.3',
 
     initEvents : function(){
-        Ext.form.Ace.superclass.initEvents.call(this);
+        Ext.ux.Ace.superclass.initEvents.call(this);
         this.editor.on('focus', this.onFocus.bind(this));
         this.editor.on('blur', this.onBlur.bind(this));
     },
@@ -49,7 +49,7 @@ Ext.form.Ace = Ext.extend(Ext.form.TextField,  {
                 style:"width:100px;height:60px;position:relative"
             };
         }
-        Ext.form.Ace.superclass.onRender.call(this, ct, position);
+        Ext.ux.Ace.superclass.onRender.call(this, ct, position);
         if(this.grow){
             this.el.setHeight(this.growMin);
         }
@@ -91,7 +91,7 @@ Ext.form.Ace = Ext.extend(Ext.form.TextField,  {
 
     onDestroy : function(){
         this.editor.destroy();
-        Ext.form.Ace.superclass.onDestroy.call(this);
+        Ext.ux.Ace.superclass.onDestroy.call(this);
     },
 
     validate : function(){
@@ -189,9 +189,12 @@ Ext.form.Ace = Ext.extend(Ext.form.TextField,  {
         this.editor.blur();
     }
 });
-Ext.reg('ace', Ext.form.Ace);
 
-MODx.form.Ace = Ext.extend(Ext.form.Ace, {
+Ext.reg('ace', Ext.ux.Ace);
+
+Ext.namespace('MODx.ux');
+
+MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
     mimeType : 'text/plain',
 
@@ -202,16 +205,17 @@ MODx.form.Ace = Ext.extend(Ext.form.Ace, {
     useWrapMode : MODx.config['ace.word_wrap'] == true,
 
     initComponent : function() {
-        MODx.form.Ace.superclass.initComponent.call(this);
+        MODx.ux.Ace.superclass.initComponent.call(this);
         var Config = ace.require("ace/config");
-        Config.set('modePath', MODx.config.manager_url + 'components/ace/assets/ace');
-        Config.set('themePath', MODx.config.manager_url + 'components/ace/assets/ace');
-        Config.set('workerPath', MODx.config.manager_url + 'components/ace/assets/ace');
+        var acePath = MODx.config['manager_url'] + 'components/ace/assets/ace';
+        Config.set('modePath', acePath);
+        Config.set('themePath', acePath);
+        Config.set('workerPath', acePath);
     },
 
     onRender : function (ct, position) {
 
-        MODx.form.Ace.superclass.onRender.call(this, ct, position);
+        MODx.ux.Ace.superclass.onRender.call(this, ct, position);
 
         this.setMimeType(this.mimeType);
 
@@ -276,54 +280,26 @@ MODx.form.Ace = Ext.extend(Ext.form.Ace, {
         this.onResize();
     },
 
-    onDestroy : function(){
-        MODx.form.Ace.superclass.onDestroy.call(this);
-    },
-
     setMimeType : function (mimeType){
-       var mode;
+        var typeMap = {
+             'text/x-php'            : 'php'
+            ,'application/x-php'     : 'php'
+            ,'text/x-sql'            : 'sql'
+            ,'text/x-scss'           : 'scss'
+            ,'text/x-less'           : 'less'
+            ,'text/xml'              : 'xml'
+            ,'application/xml'       : 'xml'
+            ,'image/svg+xml'         : 'svg'
+            ,'text/html'             : 'html'
+            ,'application/xhtml+xml' : 'html'
+            ,'text/javascript'       : 'javascript'
+            ,'application/javascript': 'javascript'
+            ,'application/json'      : 'json'
+            ,'text/css'              : 'css'
+            ,'text/plain'            : 'text'
+        };
 
-       switch (mimeType)
-       {
-            case 'text/x-php':
-            case 'application/x-php':
-                mode = 'php';
-                break;
-            case 'text/x-sql':
-                mode = 'sql';
-                break;
-            case 'text/x-scss':
-                mode = 'scss';
-                break;
-            case 'text/x-less':
-                mode = 'less';
-                break;
-            case 'text/xml':
-            case 'application/xml':
-                mode = 'xml';
-                break;
-            case 'image/svg+xml':
-                mode = 'svg';
-                break;
-            case 'text/html':
-            case 'application/xhtml+xml':
-                mode = 'html';
-                break;
-            case 'text/javascript':
-            case 'application/javascript':
-                mode = 'javascript';
-                break;
-            case 'application/json':
-                mode = 'json';
-                break;
-            case 'text/css':
-                mode = 'css';
-                break;
-            case 'text/plain':
-            default:
-               mode = 'text';
-       }
-       this.setMode( mode );
+        this.setMode( typeMap[mimeType] || 'text' );
     },
 
     showFindReplaceWindow: function (tab) {
@@ -933,4 +909,4 @@ MODx.form.Ace = Ext.extend(Ext.form.Ace, {
     }
 });
 
-Ext.reg('modx-texteditor',MODx.form.Ace);
+Ext.reg('modx-texteditor',MODx.ux.Ace);
