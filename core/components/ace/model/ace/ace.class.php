@@ -35,11 +35,7 @@ class Ace {
 
     public function initialize() {
         if (!$this->assetsLoaded) {
-
-            $lang = $this->modx->toJSON($this->modx->lexicon->fetch('ui_ace'));
-            $lang = $lang ? $lang : '{}';
-
-            $this->modx->controller->addHtml('<script>Ext.apply(MODx.lang, '.$lang.');</script>');
+            $this->modx->controller->addLexiconTopic('ace:default');
             $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/ace/ace.js');
             $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/modx.texteditor.js');
         }
