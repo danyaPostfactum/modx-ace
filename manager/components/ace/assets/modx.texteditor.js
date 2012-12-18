@@ -204,6 +204,12 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
     useWrapMode : MODx.config['ace.word_wrap'] == true,
 
+    useSoftTabs : MODx.config['ace.soft_tabs'] == true,
+
+    tabSize : MODx.config['ace.tab_size'] * 1 || 4,
+
+    showFoldWidgets : MODx.config['ace.fold_widgets'] == true,
+
     initComponent : function() {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var Config = ace.require("ace/config");

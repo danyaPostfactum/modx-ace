@@ -28,5 +28,32 @@ $settings['word_wrap']->fromArray(array(
 		'area' => 'general'
     ),'',true,true);
 
+$settings['soft_tabs']= $modx->newObject('modSystemSetting');
+$settings['soft_tabs']->fromArray(array(
+        'key' => 'ace.soft_tabs',
+        'xtype' => 'combo-boolean',
+        'value' => '1',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['tab_size']= $modx->newObject('modSystemSetting');
+$settings['tab_size']->fromArray(array(
+        'key' => 'ace.tab_size',
+        'xtype' => 'textfield',
+        'value' => '4',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['fold_widgets']= $modx->newObject('modSystemSetting');
+$settings['fold_widgets']->fromArray(array(
+        'key' => 'ace.fold_widgets',
+        'xtype' => 'combo-boolean',
+        'value' => '1',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
 
 return $settings;
