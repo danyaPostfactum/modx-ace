@@ -111,7 +111,7 @@ switch ($modx->event->name) {
                     $richText = $modx->getOption('richtext_default');
                     $classKey = $modx->getOption('class_key', $_REQUEST, 'modDocument');
             }
-            if ($richText || $classKey !== 'modDocument') {
+            if ($richText || in_array($classKey, array('modStaticResource','modSymLink','modWebLink','modXMLRPCResource'))) {
                 return;
             }
         }
