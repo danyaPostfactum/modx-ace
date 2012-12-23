@@ -144,7 +144,8 @@ $modx->controller->addHtml('<script>'."
             textArea.el.dom.removeAttribute('name');
             textArea.el.setStyle('display', 'none');
             textEditor.render(textArea.el.dom.parentNode);
-            textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
+            textEditor.on('keydown', function(t, e){textArea.fireEvent('keydown', t, e);});
+            textEditor.on('onCtrlEnter', function(t){textArea.fireEvent('onCtrlEnter', t);});
             MODx.load({
                 xtype: 'modx-treedrop',
                 target: textEditor,
