@@ -83,7 +83,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             setTimeout(function(){
                 this.valueHolder.value = this.editor.getSession().getValue();
             }.bind(this), 10);
-            this.fireEvent('keydown');
+            this.fireEvent('keydown', this.editor, Ext.EventObject);
         }).bind(this));
         // TODO: attach autoSize to according event (?)
         this.autoSize();
@@ -253,7 +253,18 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             readOnly: true
         });
 
+        this.editor.commands.addCommand({
+            name: "onCtrlEnter",
+            bindKey: {win: "Ctrl-Enter" },
+            exec: this.onCtrlEnter.bind(this),
+            readOnly: true
+        });
+
         this.windows = [];
+    },
+    
+    onCtrlEnter : function(){
+        this.fireEvent('onCtrlEnter', this);
     },
 
     fullScreen : function() {
