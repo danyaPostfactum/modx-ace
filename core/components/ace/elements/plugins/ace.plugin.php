@@ -39,6 +39,7 @@ if ($modx->event->name == 'OnManagerPageBeforeRender') {
         background-color: #FFFFFF;
         }
     ".'</style>');
+    return;
 }
 
 switch ($modx->event->name) {
@@ -104,24 +105,16 @@ switch ($modx->event->name) {
         break;
     case 'OnDocFormPrerender':
         if ($modx->getOption('use_editor')){
-            if (isset($scriptProperties['resource'])) {
-                    $richText = $scriptProperties['resource']->get('richtext');
-                    $classKey = $scriptProperties['resource']->get('class_key');
-            } else {
-                    $richText = $modx->getOption('richtext_default');
-                    $classKey = $modx->getOption('class_key', $_REQUEST, 'modDocument');
-            }
+            $richText = $modx->controller->resourceArray['richtext'];
+            $classKey = $modx->controller->resourceArray['class_key'];
+
             if ($richText || in_array($classKey, array('modStaticResource','modSymLink','modWebLink','modXMLRPCResource'))) {
                 return;
             }
         }
-        if (isset($scriptProperties['resource'])) {
-            $contentType = $modx->getObject('modContentType', $scriptProperties['resource']->get('content_type'));
-        } else {
-            $contentType = $modx->getObject('modContentType', $modx->getOption('default_content_type'));
-        }
+
         $field = 'ta';
-        $mimeType = $contentType ? $contentType->get('mime_type') : 'text/plain';
+        $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
         break;
     default:
         return;
@@ -133,6 +126,7 @@ $modx->controller->addHtml('<script>'."
             var textArea = Ext.getCmp('$field');
             var textEditor = MODx.load({
                 xtype: 'modx-texteditor',
+                enableKeyEvents: true,
                 anchor: textArea.anchor,
                 width: 'auto',
                 height: textArea.height,

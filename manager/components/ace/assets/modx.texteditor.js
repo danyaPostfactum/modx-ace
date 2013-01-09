@@ -83,7 +83,6 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             setTimeout(function(){
                 this.valueHolder.value = this.editor.getSession().getValue();
             }.bind(this), 10);
-            this.fireEvent('keydown');
         }).bind(this));
         // TODO: attach autoSize to according event (?)
         this.autoSize();
