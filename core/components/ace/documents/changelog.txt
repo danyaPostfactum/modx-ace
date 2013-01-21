@@ -1,5 +1,12 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.3.3
+====================================
+- Added: PHP live syntax check
+- Added: Chaos dark theme
+- Added: Setting show_invisibles
+
+
 Ace 1.3.2
 ====================================
 - Fixed: The bug while installing the Ace
