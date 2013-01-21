@@ -261,15 +261,21 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             this.el.setStyle({
                 position: 'relative',
                 zIndex: 0,
-                height: this.normalStyle.height,
-                width: this.normalStyle.width,
-                borderWidth: this.normalStyle.borderWidth
+                height: this.savedState.style.height,
+                width: this.savedState.style.width,
+                borderWidth: this.savedState.style.borderWidth
             });
+            this.grow = this.savedState.grow;
         } else {
             this.isFullscreen = true;
-            this.normalStyle = {};
-            this.normalStyle.height = this.el.getStyle('height');
-            this.normalStyle.borderWidth = this.el.getStyle('border-width');
+            this.savedState = {
+                style: {
+                    width: this.el.dom.style.width,
+                    height: this.el.dom.style.height,
+                    borderWidth: this.el.dom.style.borderWidth,
+                },
+                grow: this.grow
+            };
             this.el.setStyle({
                 position: 'fixed',
                 zIndex: 100,
@@ -281,6 +287,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
                 width: 'auto',
                 borderWidth: 0
             });
+            this.grow = false;
         }
         this.onResize();
     },
