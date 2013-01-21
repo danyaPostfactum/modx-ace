@@ -209,6 +209,8 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
     showFoldWidgets : MODx.config['ace.fold_widgets'] == true,
 
+    showInvisibles : MODx.config['ace.show_invisibles'] == true,
+
     initComponent : function() {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var Config = ace.require("ace/config");

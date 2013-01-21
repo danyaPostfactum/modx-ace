@@ -55,5 +55,14 @@ $settings['fold_widgets']->fromArray(array(
         'area' => 'general'
     ),'',true,true);
 
+$settings['show_invisibles']= $modx->newObject('modSystemSetting');
+$settings['show_invisibles']->fromArray(array(
+        'key' => 'ace.show_invisibles',
+        'xtype' => 'combo-boolean',
+        'value' => '0',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
 
 return $settings;
