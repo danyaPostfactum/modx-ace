@@ -64,4 +64,11 @@ $events['OnManagerPageBeforeRender']->fromArray(array(
     'propertyset' => 0
 ),'',true,true);
 
+$events['OnSiteSettingsRender'] = $modx->newObject('modPluginEvent');
+$events['OnSiteSettingsRender']->fromArray(array(
+    'event' => 'OnSiteSettingsRender',
+    'priority' => 0,
+    'propertyset' => 0
+),'',true,true);
+
 return $events;

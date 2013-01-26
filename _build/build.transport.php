@@ -13,7 +13,7 @@ set_time_limit(0);
 /* define version */
 define('PKG_NAME','Ace');
 define('PKG_NAMESPACE','ace');
-define('PKG_VERSION','1.3.3');
+define('PKG_VERSION','1.3.4');
 define('PKG_RELEASE','pl');
  
 /* define sources */
@@ -49,8 +49,9 @@ $plugin= $modx->newObject('modPlugin');
 $plugin->set('id',1);
 $plugin->set('name', PKG_NAME);
 $plugin->set('description', 'Ace code editor plugin for MODx Revolution');
-$plugin->set('static', true);
-$plugin->set('static_file', PKG_NAMESPACE.'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php');
+$plugin->set('static', 1);
+$plugin->set('source', 1);
+$plugin->set('static_file', 'core/components/'.PKG_NAMESPACE.'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php');
 //$plugin->set('plugincode', file_get_contents($sources['source_core'].'/elements/plugins/'.PKG_NAMESPACE.'.plugin.php'));
 $plugin->set('category', 0);
 
