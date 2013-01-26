@@ -4,10 +4,10 @@ $settings = array();
 $settings['theme']= $modx->newObject('modSystemSetting');
 $settings['theme']->fromArray(array(
         'key' => 'ace.theme',
-        'xtype' => 'textfield',
+        'xtype' => 'combo-ace-theme',
         'value' => 'chrome',
         'namespace' => 'ace',
-		'area' => 'general'
+        'area' => 'general'
     ),'',true,true);
 
 $settings['font_size']= $modx->newObject('modSystemSetting');
@@ -16,7 +16,7 @@ $settings['font_size']->fromArray(array(
         'xtype' => 'textfield',
         'value' => '13px',
         'namespace' => 'ace',
-		'area' => 'general'
+        'area' => 'general'
     ),'',true,true);
 
 $settings['word_wrap']= $modx->newObject('modSystemSetting');

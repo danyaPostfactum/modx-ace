@@ -27,17 +27,24 @@ if ($pluginid= $object->get('id')) {
             }
             unset($setting);
             // add missing event in MODx < 2.2.3
-			$event = $object->xpdo->getObject('modEvent', array('name' => 'OnFileEditFormPrerender'));
-			if (!$event) {
-				$object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to add missing OnFileEditFormPrerender event to MODx.');
-				$event = $object->xpdo->newObject('modEvent');
-				$event->fromArray(array (
-				  'name' => 'OnFileEditFormPrerender',
-				  'service' => 1,
-				  'groupname' => 'System',
-				), '', true, true);
-				$event->save();
-			}
+            $event = $object->xpdo->getObject('modEvent', array('name' => 'OnFileEditFormPrerender'));
+            if (!$event) {
+                $object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to add missing OnFileEditFormPrerender event to MODx.');
+                $event = $object->xpdo->newObject('modEvent');
+                $event->fromArray(array (
+                  'name' => 'OnFileEditFormPrerender',
+                  'service' => 1,
+                  'groupname' => 'System',
+                ), '', true, true);
+                $event->save();
+            }
+            // change old xtype of ace.theme setting
+            $setting = $object->xpdo->getObject('modSystemSetting',array('key' => 'ace.theme', 'xtype' => 'textfield'));
+            if ($setting) {
+                $object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to change xtype of ace.theme.');
+                $setting->set('xtype', 'combo-ace-theme');
+                $setting->save();
+            }
             break;
         case xPDOTransport::ACTION_UNINSTALL:
             $success= true;
@@ -46,9 +53,9 @@ if ($pluginid= $object->get('id')) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_UPGRADE:
             // remove obsolete plugin properties and files
-			$plugin = $object->xpdo->getObject('modPlugin', array('name' => 'Ace'));	
+            $plugin = $object->xpdo->getObject('modPlugin', array('name' => 'Ace'));
             if ($plugin) {
-				$object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to clear obsolete plugin properties.');
+                $object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to clear obsolete plugin properties.');
                 $plugin->setProperties(array());
                 $plugin->save();
                 
@@ -68,7 +75,7 @@ if ($pluginid= $object->get('id')) {
 
                 rrmdir(MODX_ASSETS_PATH. 'components/ace/');
             }
-	}
+    }
 }
 
 return $success;

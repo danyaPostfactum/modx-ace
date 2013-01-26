@@ -11,6 +11,25 @@
  * @package ace
  */
 
+if ($modx->event->name == 'OnSiteSettingsRender') {
+    $modx->controller->addHtml('<script>'."
+        Ext.onReady(function() {
+            MODx.combo.AceTheme = function(config) {
+                config = config || {};
+                Ext.applyIf(config,{
+                    store: ['ambiance','chaos','chrome','clouds','clouds_midnight','cobalt','crimson_editor','dawn','dreamweaver','eclipse','github','idle_fingers','kr','merbivore','merbivore_soft','mono_industrial','monokai','pastel_on_dark','solarized_dark','solarized_light','textmate','tomorrow','tomorrow_night','tomorrow_night_blue','tomorrow_night_bright','tomorrow_night_eighties','twilight','vibrant_ink','xcode']
+                    ,name: 'value'
+                    ,hiddenName: 'value'
+                });
+                MODx.combo.AceTheme.superclass.constructor.call(this,config);
+            };
+            Ext.extend(MODx.combo.AceTheme,MODx.combo.ComboBox);
+            Ext.reg('combo-ace-theme',MODx.combo.AceTheme);
+        });
+    ".'</script>');
+    return;
+}
+
 if ($modx->event->name == 'OnRichTextEditorRegister') {
     $modx->event->output('Ace');
     return;
