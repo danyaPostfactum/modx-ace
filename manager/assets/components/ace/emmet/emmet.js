@@ -1,3 +1,4 @@
+(function(){
 //     Underscore.js 1.3.3
 //     (c) 2009-2012 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore is freely distributable under the MIT license.
@@ -13663,3 +13664,6 @@ emmet.define('bootstrap', function(require, _) {
 	res.setVocabulary(require('utils').deepMerge(userData, snippets), 'user');
 
 });
+
+window.emmet = emmet;
+})();
