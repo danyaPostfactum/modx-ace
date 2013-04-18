@@ -104,54 +104,75 @@ switch ($modx->event->name) {
         }
         break;
     case 'OnDocFormPrerender':
+        $field = 'ta';
+        $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
         if ($modx->getOption('use_editor')){
             $richText = $modx->controller->resourceArray['richtext'];
             $classKey = $modx->controller->resourceArray['class_key'];
-
             if ($richText || in_array($classKey, array('modStaticResource','modSymLink','modWebLink','modXMLRPCResource'))) {
-                return;
+                $field = false;
             }
         }
 
-        $field = 'ta';
-        $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
         break;
     default:
         return;
 }
 
-$modx->controller->addHtml('<script>'."
-    Ext.onReady(function() {
-        setTimeout(function(){
-            var textArea = Ext.getCmp('$field');
-            var textEditor = MODx.load({
-                xtype: 'modx-texteditor',
-                enableKeyEvents: true,
-                anchor: textArea.anchor,
-                width: 'auto',
-                height: textArea.height,
-                name: textArea.name,
-                value: textArea.getValue(),
-                mimeType: '$mimeType'
-            });
+$script = "";
 
-            textArea.el.dom.removeAttribute('name');
-            textArea.el.setStyle('display', 'none');
-            textEditor.render(textArea.el.dom.parentNode);
-            textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
-            MODx.load({
-                xtype: 'modx-treedrop',
-                target: textEditor,
-                targetEl: textEditor.el,
-                onInsert: (function(s){
-                    this.insertAtCursor(s);
-                    this.focus();
-                    return true;
-                }).bind(textEditor),
-                iframe: true
-            });
+if ($field) {
+    $script .="
+    setTimeout(function(){
+        var textArea = Ext.getCmp('$field');
+        var textEditor = MODx.load({
+            xtype: 'modx-texteditor',
+            enableKeyEvents: true,
+            anchor: textArea.anchor,
+            width: 'auto',
+            height: textArea.height,
+            name: textArea.name,
+            value: textArea.getValue(),
+            mimeType: '$mimeType'
         });
-    });
-".'</script>');
 
-return;
+        textArea.el.dom.removeAttribute('name');
+        textArea.el.setStyle('display', 'none');
+        textEditor.render(textArea.el.dom.parentNode);
+        textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
+        MODx.load({
+            xtype: 'modx-treedrop',
+            target: textEditor,
+            targetEl: textEditor.el,
+            onInsert: (function(s){
+                this.insertAtCursor(s);
+                this.focus();
+                return true;
+            }).bind(textEditor),
+            iframe: true
+        });
+    });";
+}
+
+if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor')) {
+    $script .= "
+    var textAreas = Ext.query('.modx-richtext');
+    textAreas.forEach(function(textArea){
+        var htmlEditor = MODx.load({
+            xtype: 'modx-texteditor',
+            width: 'auto',
+            height: parseInt(textArea.style.height) || 200,
+            name: textArea.name,
+            value: textArea.value,
+            mimeType: 'text/html'
+        });
+
+        textArea.name = '';
+        textArea.style.display = 'none';
+
+        htmlEditor.render(textArea.parentNode);
+        htmlEditor.editor.on('key', function(e){ MODx.fireResourceFormChange() });
+    });";
+}
+
+$modx->controller->addHtml('<script>Ext.onReady(function() {' . $script . '});</script>');
