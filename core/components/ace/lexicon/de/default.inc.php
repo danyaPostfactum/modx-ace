@@ -24,7 +24,7 @@ $_lang['ui_ace.whole_word']          = 'Ganze W&ouml;rter';
 $_lang['area_general']               = 'Allgemeine Einstellungen';
 
 $_lang['setting_ace.theme']          = 'Editor Thema';
-$_lang['setting_ace.theme_desc']     = 'Verf&uuml;gbare Themen: ambiance, chaos, chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse, github, idle_fingers, kr, merbivore, merbivore_soft, mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, textmate, tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight, vibrant_ink, xcode.';
+$_lang['setting_ace.theme_desc']     = 'Verf&uuml;gbare Themen: ambiance, chaos, chrome, clouds, clouds_midnight, cobalt, crimson_editor, dawn, dreamweaver, eclipse, github, idle_fingers, kr, merbivore, merbivore_soft, mono_industrial, monokai, pastel_on_dark, solarized_dark, solarized_light, terminal, textmate, tomorrow, tomorrow_night, tomorrow_night_blue, tomorrow_night_bright, tomorrow_night_eighties, twilight, vibrant_ink, xcode.';
 $_lang['setting_ace.word_wrap']      = 'Zeilenumbruch';
 $_lang['setting_ace.word_wrap_desc'] = 'Lange Zeilen umbrechen.';
 $_lang['setting_ace.font_size']      = 'Schriftgr&ouml;&szlig;e';
