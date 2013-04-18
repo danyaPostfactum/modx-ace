@@ -226,6 +226,13 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
         this.setMimeType(this.mimeType);
 
+        var Emmet = ace.require("ace/ext/emmet");
+        var net = ace.require('ace/lib/net');
+        net.loadScript(MODx.config['manager_url'] + 'components/ace/assets/emmet/emmet.js', function() {
+            Emmet.setCore(window.emmet);
+            this.editor.setOption("enableEmmet", true);
+        }.bind(this));
+
         this.editor.commands.addCommand({
             name: "find",
             bindKey: {win: "Ctrl-F", mac: "Command-F"},
