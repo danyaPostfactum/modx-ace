@@ -229,14 +229,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         this.editor.commands.addCommand({
             name: "find",
             bindKey: {win: "Ctrl-F", mac: "Command-F"},
-            exec: (function(){this.showFindReplaceWindow(0);}).bind(this),
+            exec: this.showFindReplaceWindow.bind(this, 0),
             readOnly: true
         });
 
         this.editor.commands.addCommand({
             name: "replace",
             bindKey: {win: "Ctrl-R|Ctrl-Shift-R", mac: "Command-Option-F|Command-Shift-Option-F"},
-            exec: (function(){this.showFindReplaceWindow(1);}).bind(this),
+            exec: this.showFindReplaceWindow.bind(this, 1),
             readOnly: true
         });
 
@@ -605,13 +605,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     },
 
     setMode : function (mode){
-        this.editor.getSession().setMode( 'ace/mode/' + mode );
-        this.editor.getSession().on('loadmode' ,function(data){
-            var mode = data.mode;
+        var editor = this.editor;
+        this.editor.session.setMode( 'ace/mode/' + mode );
+        this.editor.session.on('changeMode' ,function(data){
+            var mode = this.getMode();
             if (mode.modx) return;
             mode.modx = true;
 
-            var rules = mode.getTokenizer().rules;
+            var rules = mode.getTokenizer().states;
             for (var state in rules)
             {
                 rules[state].unshift({
@@ -813,6 +814,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             var Tokenizer = ace.require("ace/tokenizer").Tokenizer;
             var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
             mode.$tokenizer = new Tokenizer(rules);
+            this.bgTokenizer.setTokenizer(mode.$tokenizer);
             mode.$behaviour = mode.$behaviour || new Behaviour();
             mode.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
                 if (text == '[') {
@@ -919,7 +921,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
                     }
                 }
             });
-        });
+        }.bind(this.editor.session));
     }
 });
 
