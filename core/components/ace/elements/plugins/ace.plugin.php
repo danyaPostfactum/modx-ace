@@ -104,6 +104,9 @@ switch ($modx->event->name) {
         }
         break;
     case 'OnDocFormPrerender':
+        if (!$modx->controller->resourceArray) {
+            return;
+        }
         $field = 'ta';
         $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
         if ($modx->getOption('use_editor')){
