@@ -233,6 +233,15 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             this.editor.setOption("enableEmmet", true);
         }.bind(this));
 
+        ace.require('ace/ext/keybinding_menu').init(this.editor);
+        this.editor.commands.addCommand({
+            name: "showKeyboardShortcuts",
+            bindKey: {win: "Ctrl-Alt-H", mac: "Command-Alt-H"},
+            exec: function(editor) {
+                editor.showKeyboardShortcuts()
+            }
+        });
+
         this.editor.commands.addCommand({
             name: "find",
             bindKey: {win: "Ctrl-F", mac: "Command-F"},
