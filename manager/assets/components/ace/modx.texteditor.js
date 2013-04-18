@@ -214,7 +214,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     initComponent : function() {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var Config = ace.require("ace/config");
-        var acePath = MODx.config['manager_url'] + 'components/ace/assets/ace';
+        var acePath = MODx.config['manager_url'] + 'assets/components/ace/ace';
         Config.set('modePath', acePath);
         Config.set('themePath', acePath);
         Config.set('workerPath', acePath);
@@ -228,7 +228,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
         var Emmet = ace.require("ace/ext/emmet");
         var net = ace.require('ace/lib/net');
-        net.loadScript(MODx.config['manager_url'] + 'components/ace/assets/emmet/emmet.js', function() {
+        net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
             Emmet.setCore(window.emmet);
             this.editor.setOption("enableEmmet", true);
         }.bind(this));

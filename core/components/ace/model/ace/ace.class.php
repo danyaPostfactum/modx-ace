@@ -22,11 +22,11 @@ class Ace {
         $this->modx =& $modx;
 
         $corePath = $this->modx->getOption('ace.core_path',$config,$this->modx->getOption('core_path').'components/ace/');
-        $managerUrl = $this->modx->getOption('ace.manager_url',$config,$this->modx->getOption('manager_url').'components/ace/');
+        $managerAssetsUrl = $this->modx->getOption('ace.manager_assets_url',$config,$this->modx->getOption('manager_url').'assets/components/ace/');
 
         $this->config = array_merge(array(
             'corePath' => $corePath,
-            'managerUrl' => $managerUrl,
+            'managerAssetsUrl' => $managerAssetsUrl,
         ),$config);
 
         $this->modx->addPackage('ace', $this->config['corePath'].'model/');
@@ -36,8 +36,8 @@ class Ace {
     public function initialize() {
         if (!$this->assetsLoaded) {
             $this->modx->controller->addLexiconTopic('ace:default');
-            $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/ace/ace.js');
-            $this->modx->controller->addJavascript($this->config['managerUrl'].'assets/modx.texteditor.js');
+            $this->modx->controller->addJavascript($this->config['managerAssetsUrl'].'ace/ace.js');
+            $this->modx->controller->addJavascript($this->config['managerAssetsUrl'].'modx.texteditor.js');
         }
         $this->assetsLoaded = true;
     }

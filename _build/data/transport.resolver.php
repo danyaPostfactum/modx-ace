@@ -66,7 +66,14 @@ if ($pluginid= $object->get('id')) {
                    }
                  }
 
-                rrmdir(MODX_ASSETS_PATH. 'components/ace/');
+                $oldAssets = array(MODX_ASSETS_PATH. 'components/ace/', MODX_MANAGER_PATH. 'components/ace/');
+                foreach ($oldAssets as $path) {
+                    if (is_dir($path)) {
+                        $object->xpdo->log(xPDO::LOG_LEVEL_INFO, "Attempting to remove old assets directory ($path).");
+                        rrmdir($path);
+                        break;
+                    }
+                }
             }
 	}
 }
