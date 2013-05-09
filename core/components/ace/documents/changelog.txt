@@ -1,5 +1,12 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.4.1
+====================================
+- Fixed: Tab handling
+- Fixed: Emmet shortcut listing by Ctr+Alt+H
+- Added: Expandable snippets support (see ace.snippets setting)
+- Added: Emmet wrap_with_abbreviation command (Alt+W)
+
 Ace 1.4.0
 ====================================
 - Added: Emmet (aka Zen Coding) support
