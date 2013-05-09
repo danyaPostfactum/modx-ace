@@ -64,5 +64,14 @@ $settings['show_invisibles']->fromArray(array(
         'area' => 'general'
     ),'',true,true);
 
+$settings['snippets']= $modx->newObject('modSystemSetting');
+$settings['snippets']->fromArray(array(
+        'key' => 'ace.snippets',
+        'xtype' => 'textarea',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
 
 return $settings;

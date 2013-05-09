@@ -231,11 +231,33 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
         this.setMimeType(this.mimeType);
 
+        var snippetManager = ace.require("ace/snippets").snippetManager;
+        var snippets = MODx.config['ace.snippets'] || '';
+        snippetManager.register(snippetManager.parseSnippetFile(snippets), "_");
+
+        var HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
+        var commands = new HashHandler();
+        commands.addCommand({
+            name: "insertsnippet",
+            bindKey: {win: "Tab", mac: "Tab"},
+            exec: function(editor) {
+                return snippetManager.expandWithTab(editor);
+            }
+        });
+        // to overwrite emmet
+        var onChangeMode = function(e, target) {
+            var editor = target;
+            editor.keyBinding.addKeyboardHandler(commands);
+        }
+        onChangeMode({}, this.editor);
+
         var Emmet = ace.require("ace/ext/emmet");
         var net = ace.require('ace/lib/net');
         net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
             Emmet.setCore(window.emmet);
             this.editor.setOption("enableEmmet", true);
+            this.editor.on("changeMode", onChangeMode);
+            onChangeMode({}, this.editor);
         }.bind(this));
 
         ace.require('ace/ext/keybinding_menu').init(this.editor);

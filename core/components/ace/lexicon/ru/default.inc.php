@@ -37,3 +37,5 @@ $_lang['setting_ace.fold_widgets'] = 'Свертывание кода';
 $_lang['setting_ace.fold_widgets_desc'] = 'Отображать на линейке элементы управления свертыванием кода.';
 $_lang['setting_ace.show_invisibles'] = 'Невидимые символы';
 $_lang['setting_ace.show_invisibles_desc'] = 'Отображать пробелы, табуляцию и символы конца строк.';
+$_lang['setting_ace.snippets'] = 'Сниппеты';
+$_lang['setting_ace.snippets_desc'] = "Сниппеты, разворачиваемые по клавише «Tab». Пример сниппета:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>Знак табуляции можно вставить используя клавиши Alt + 09";

@@ -37,3 +37,5 @@ $_lang['setting_ace.fold_widgets']      = 'Fold widgets';
 $_lang['setting_ace.fold_widgets_desc'] = 'Show fold widgets in the gutter.';
 $_lang['setting_ace.show_invisibles']   = 'Invisible characters';
 $_lang['setting_ace.show_invisibles_desc'] = 'Show whitespaces, tabs and line endings.';
+$_lang['setting_ace.snippets'] = 'Snippets';
+$_lang['setting_ace.snippets_desc'] = "Code snippets expanded by “Tab”. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09";
