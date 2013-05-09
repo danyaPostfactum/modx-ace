@@ -102,7 +102,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     onResize : function(){
-        this.editor.resize();
+        this.editor.resize(true);
     },
 
     doAutoSize : function(e){
@@ -125,6 +125,11 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
+    },
+
+    setSize : function(width, height){
+        Ext.ux.Ace.superclass.setSize.apply(this, arguments);
+        this.editor.resize(true);
     },
 
     getValue : function (){

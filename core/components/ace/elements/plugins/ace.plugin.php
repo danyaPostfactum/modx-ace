@@ -142,6 +142,7 @@ if ($field) {
         textArea.el.dom.removeAttribute('name');
         textArea.el.setStyle('display', 'none');
         textEditor.render(textArea.el.dom.parentNode);
+        textArea.setSize = function(){textEditor.setSize.apply(textEditor, arguments)}
         textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
         MODx.load({
             xtype: 'modx-treedrop',
