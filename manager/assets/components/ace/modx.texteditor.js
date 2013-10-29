@@ -50,6 +50,9 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             };
         }
         Ext.ux.Ace.superclass.onRender.call(this, ct, position);
+
+        var useragent = ace.require('ace/lib/useragent');
+
         if(this.grow){
             this.el.setHeight(this.growMin);
         }
@@ -65,7 +68,10 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
 
         this.editor.setShowPrintMargin(false);
         this.editor.getSession().setTabSize(this.tabSize);
-        this.editor.setDragDelay(0);
+
+        if (!useragent.isMac)
+            this.editor.setDragDelay(0);
+
         this.editor.setFontSize(this.fontSize);
         this.editor.setFadeFoldWidgets(false);
 
