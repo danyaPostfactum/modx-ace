@@ -292,7 +292,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
         this.editor.commands.addCommand({
             name: "fullscreen",
-            bindKey: {win: "Ctrl-F11", mac: "Command-Option-Q"},
+            bindKey: {win: "Ctrl-F11", mac: "Command-F12"},
             exec: this.fullScreen.bind(this),
             readOnly: true
         });
