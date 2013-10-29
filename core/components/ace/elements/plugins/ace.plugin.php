@@ -10,7 +10,6 @@
  *
  * @package ace
  */
-
 if ($modx->event->name == 'OnRichTextEditorRegister') {
     $modx->event->output('Ace');
     return;
@@ -25,6 +24,7 @@ $ace = $modx->getService('ace','Ace',$modx->getOption('ace.core_path',null,$modx
 $ace->initialize();
 
 if ($modx->event->name == 'OnManagerPageBeforeRender') {
+    // older modx versions has no these styles
     $modx->controller->addHtml('<style>'."
         .x-form-textarea{
         border-radius:2px;
@@ -42,6 +42,22 @@ if ($modx->event->name == 'OnManagerPageBeforeRender') {
     return;
 }
 
+$extensionMap = array(
+    'tpl'   => 'text/html',
+    'htm'   => 'text/html',
+    'html'  => 'text/html',
+    'css'   => 'text/css',
+    'scss'  => 'text/x-scss',
+    'less'  => 'text/x-less',
+    'svg'   => 'image/svg+xml',
+    'xml'   => 'application/xml',
+    'js'    => 'application/javascript',
+    'json'  => 'application/json',
+    'php'   => 'application/x-php',
+    'sql'   => 'text/x-sql',
+    'txt'   => 'text/plain',
+);
+
 switch ($modx->event->name) {
     case 'OnSnipFormPrerender':
         $field = 'modx-snippet-snippet';
@@ -53,7 +69,12 @@ switch ($modx->event->name) {
         break;
     case 'OnChunkFormPrerender':
         $field = 'modx-chunk-snippet';
-        $mimeType = 'text/html';
+        if ($modx->controller->chunk && $modx->controller->chunk->isStatic()) {
+            $extension = pathinfo($modx->controller->chunk->getSourceFile(), PATHINFO_EXTENSION);
+            $mimeType = isset($extensionMap[$extension]) ? $extensionMap[$extension] : 'text/plain';
+        } else {
+            $mimeType = 'text/html';
+        }
         break;
     case 'OnPluginFormPrerender':
         $field = 'modx-plugin-plugincode';
@@ -65,43 +86,8 @@ switch ($modx->event->name) {
         break;
     case 'OnFileEditFormPrerender':
         $field = 'modx-file-content';
-        switch (pathinfo($scriptProperties['file'], PATHINFO_EXTENSION))
-        {
-            case 'tpl':
-            case 'html':
-                $mimeType = 'text/html';
-                break;
-            case 'css':
-                $mimeType = 'text/css';
-                break;
-            case 'scss':
-                $mimeType = 'text/x-scss';
-                break;
-            case 'less':
-                $mimeType = 'text/x-less';
-                break;
-            case 'svg':
-                $mimeType = 'image/svg+xml';
-                break;
-            case 'xml':
-                $mimeType = 'application/xml';
-                break;
-            case 'js':
-                $mimeType = 'application/javascript';
-                break;
-            case 'json':
-                $mimeType = 'application/json';
-                break;
-            case 'php':
-                $mimeType = 'application/x-php';
-                break;
-            case 'sql':
-                $mimeType = 'text/x-sql';
-                break;
-            case 'txt':
-            default:
-                $mimeType = 'text/plain';
-        }
+        $extension = pathinfo($scriptProperties['file'], PATHINFO_EXTENSION);
+        $mimeType = isset($extensionMap[$extension]) ? $extensionMap[$extension] : 'text/plain';
         break;
     case 'OnDocFormPrerender':
         if (!$modx->controller->resourceArray) {
