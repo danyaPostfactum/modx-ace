@@ -69,6 +69,8 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         this.editor.setShowPrintMargin(false);
         this.editor.getSession().setTabSize(this.tabSize);
 
+        this.editor.setAutoScrollEditorIntoView(true);
+
         if (!useragent.isMac)
             this.editor.setDragDelay(0);
 
