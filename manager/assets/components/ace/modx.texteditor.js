@@ -256,7 +256,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         var onChangeMode = function(e, target) {
             var editor = target;
             editor.keyBinding.addKeyboardHandler(commands);
-        }
+        };
         onChangeMode({}, this.editor);
 
         var Emmet = ace.require("ace/ext/emmet");
@@ -273,7 +273,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             name: "showKeyboardShortcuts",
             bindKey: {win: "Ctrl-Alt-H", mac: "Command-Alt-H"},
             exec: function(editor) {
-                editor.showKeyboardShortcuts()
+                editor.showKeyboardShortcuts();
             }
         });
 
@@ -664,207 +664,207 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             mode.modx = true;
 
             var rules = mode.getTokenizer().states;
-            for (var state in rules)
-            {
-                rules[state].unshift({
-                    token : "support.constant", // opening tag
-                    regex : "\\[\\[",
-                    next : state+'-modxtag-start'
-                });
-                rules[state].unshift({
-                    token : "comment", // opening tag
-                    regex : "\\[\\[\\-",
-                    next : state+'-modxtag-comment',
-                    merge: true
-                });
-                var modxRules = {};
-                /*
-                    state"start" : [
+
+            function ModxMixedHighlightRules(HighlightRules) {
+                HighlightRules.call(this);
+
+                this.$rules['modxtag-comment'] = [
                     {
-                    token : "comment.tag", // opening tag
-                    regex : "\\[\\[\\-.*?\\]\\]"
-                    }, {
-                    token : "meta.tag", // opening tag
-                    regex : "\\[\\[",
-                    next : 'tag-start'
-                    }, {
-                    token : "text",
-                    regex : "\\s+"
-                } ],*/
-                modxRules[state + '-modxtag-comment'] = [
-                
-                {
-                    token : "comment",
-                    regex : "[^\\[\\]]+",
-                    merge : true
-                },{
-                    token : "comment",
-                    regex : "\\[\\[\\-.*?\\]\\]"
-                },{
-                    token : "comment",
-                    regex : "\\s+",
-                    merge : true
-                },
-                {
-                    token : "comment",
-                    regex : "\\]\\]",
-                    next: state
-                }
-                ];
-                modxRules[state + '-modxtag-start'] = [
-                {
-                    token : "variable",
-                    regex : "!?(?:[%|*|~|\\+|\\$]|(?:\\+\\+)|(?:\\*#))?(?:[-_a-zA-Z0-9\\.]+|\\[\\[.*?\\]\\])",
-                    next : state + '-modxtag-propertyset'
-                },
-                {
-                    token : "text",
-                    regex : "\\s+"
-                },
-                {
-                    token : "support.constant",
-                    regex : "\\]\\]",
-                    next: state
-                }
-                ];
-                modxRules[state + '-modxtag-propertyset'] = [
-                {
-                    token : ['keyword.operator', "support.class"],
-                    regex : "(@)([-_a-zA-Z0-9\\.]+|\\[\\[.*?\\]\\])",
-                    next : state + '-modxtag-filter'
-                },
-                {
-                    token : "text",
-                    regex : "\\s+"
-                },
-                {
-                    token: "empty",
-                    regex: "",
-                    next: state + "-modxtag-filter"
-                }
-                ];
-                modxRules[state + '-modxtag-filter'] = [
-                {
-                    token : ['keyword.operator', "support.function"],
-                    regex : "(:)([-_a-zA-Z0-9]+|\\[\\[.*?\\]\\])",
-                    next : state + '-modxtag-filter-eq'
-                },
-                {
-                    token : "text",
-                    regex : "\\s+"
-                },
-                {
-                    token: "empty",
-                    regex: "",
-                    next: state + "-modxtag-attributes"
-                }
-                ];
-                modxRules[state + '-modxtag-filter-eq'] =
-                [
-                {
-                    token : ["keyword.operator"],
-                    regex : "="
+                        token : "comment",
+                        regex : "[^\\[\\]]+",
+                        merge : true
                     },{
-                    token : 'string',
-                    regex : '`',
-                    next: state + "-modxtag-filter-value"
-                },
-                {
-                    token : "text",
-                    regex : "\\s+"
-                },
-                {
-                    token: "empty",
-                    regex: "",
-                    next: state + "-modxtag-filter"
-                }
+                        token : "comment",
+                        regex : "\\[\\[\\-.*?\\]\\]"
+                    },{
+                        token : "comment",
+                        regex : "\\s+",
+                        merge : true
+                    },
+                    {
+                        token : "comment",
+                        regex : "\\]\\]",
+                        next: "pop"
+                    }
                 ];
-                modxRules[state + "-modxtag-attributes"] = [
-                {
-                    token : "string",
-                    regex : '`',
-                    next : state + "-modxtag-attribute-value"
-                    }, {
-                    token : "keyword.operator",
-                    regex : "="
-                    }, {
-                    token : "entity.other.attribute-name",
-                    regex : "[&\\?](?:[-_a-zA-Z0-9]+|\\[\\[.*?\\]\\])"
-                },
-                {
-                    token : "comment",
-                    regex : "\\[\\[\\-.*?\\]\\]"
-                }
-                ,{
-                    token : "constant.buildin",
-                    regex : "\\[\\[.*?\\]\\]"
-                },
-                {
-                    token : "support.constant",
-                    regex : "\\]\\]",
-                    next: state
-                    }, {
-                    token : "text",
-                    regex : "\\s+"
-                }];
-                modxRules[state + "-modxtag-attribute-value"] = [
-                {
-                    token : "string",
-                    regex : "[^`\\[]+",
-                    merge : true
-                    },{
-                    token : "string",
-                    regex : "\\[\\[.*?\\]\\]",
-                    merge : true
-                    },{
-                    token : "string",
-                    regex : "[^`]+",
-                    merge : true
-                    }, {
-                    token : "string",
-                    regex : "\\\\$",
-                    next  : state + "-modxtag-attribute-value",
-                    merge : true
-                    }, {
-                    token : "string",
-                    regex : "`",
-                    next  : state + "-modxtag-attributes",
-                    merge : true
-                }
+                this.$rules['modxtag-start'] = [
+                    {
+                        token : "variable",
+                        regex : "!?(?:[%|*|~|\\+|\\$]|(?:\\+\\+)|(?:\\*#))?(?:[-_a-zA-Z0-9\\.]+)",
+                        push : [
+                            {include: "modxtag-filter"},
+                            {
+                                token: "keyword.operator",
+                                regex: "\\?",
+                                push: [
+                                    {token : "text", regex : "\\s+"},
+                                    {include: 'modxtag-property-string'},
+                                    {token: "", regex: "$"},
+                                    {token: '', regex: '', next: 'pop'}
+                                ]
+                            },
+                            {token : "text", regex : "\\s+"},
+                            {token: "", regex: "$"},
+                            {token: '', regex: '', next: 'pop'}
+                        ]
+                    },
+                    {
+                        token : "support.constant", // opening tag
+                        regex : "\\[\\[",
+                        push : 'modxtag-start'
+                    },
+                    {
+                        token : "text",
+                        regex : "\\s+"
+                    },
+                    {
+                        token : "support.constant",
+                        regex : "\\]\\]",
+                        next: "pop"
+                    }
                 ];
-                modxRules[state + "-modxtag-filter-value"] = [
-                {
-                    token : "string",
-                    regex : "[^`\\[]+",
-                    merge : true
-                    },{
-                    token : "string",
-                    regex : "\\[\\[.*?\\]\\]",
-                    merge : true
-                    }, {
-                    token : "string",
-                    regex : "\\\\$",
-                    next  : state + "-modxtag-filter-value",
-                    merge : true
-                    }, {
-                    token : "string",
-                    regex : "`",
-                    next  : state + "-modxtag-filter",
-                    merge : true
-                }
+                this.$rules['modxtag-propertyset'] = [
+                    {
+                        token : ['keyword.operator', "support.class"],
+                        regex : "(@)([-_a-zA-Z0-9\\.]+|\\[\\[.*?\\]\\])",
+                        next : 'modxtag-filter'
+                    },
+                    {
+                        token : "text",
+                        regex : "\\s+"
+                    },
+                    {token: "", regex: "$"},
+                    {
+                        token: "empty",
+                        regex: "",
+                        next: "modxtag-filter"
+                    }
+                ];
+                this.$rules['modxtag-filter'] = [
+                    {
+                        token : ['keyword.operator', "support.function"],
+                        regex : "(:)([-_a-zA-Z0-9]+|\\[\\[.*?\\]\\])",
+                        push : 'modxtag-filter-eq'
+                    },
+                    {
+                        token : "text",
+                        regex : "\\s+"
+                    }
+                ];
+                this.$rules['modxtag-filter-eq'] = [
+                    {
+                        token : ["keyword.operator"],
+                        regex : "="
+                        },{
+                        token : 'string',
+                        regex : '`',
+                        push: "modxtag-filter-value"
+                    },
+                    {
+                        token : "text",
+                        regex : "\\s+"
+                    },
+                    {
+                        token: "empty",
+                        regex: "",
+                        next: "pop"
+                    }
+                ];
+                this.$rules["modxtag-property-string"] = [
+                    {
+                        token : "entity.other.attribute-name",
+                        regex: "&"
+                    },
+                    {
+                        token: "entity.other.attribute-name",
+                        regex: "[-_a-zA-Z0-9]+"
+                    },
+                    {
+                        token : "string",
+                        regex : '`',
+                        push : "modxtag-attribute-value"
+                        }, {
+                        token : "keyword.operator",
+                        regex : "="
+                        }, {
+                        token : "entity.other.attribute-name",
+                        regex : "[-_a-zA-Z0-9]+"
+                    },
+                    {
+                        token : "comment",
+                        regex : "\\[\\[\\-.*?\\]\\]"
+                    },
+                    {
+                        token : "text",
+                        regex : "\\s+"
+                    }
+                ];
+                this.$rules["modxtag-attribute-value"] = [
+                    {
+                        token : "string",
+                        regex : "[^`\\[]+",
+                        merge : true
+                        },{
+                        token : "string",
+                        regex : "[^`]+",
+                        merge : true
+                        },/* {
+                        token : "string",
+                        regex : "\\\\$",
+                        next  : "modxtag-attribute-value",
+                        merge : true
+                        },*/ {
+                        token : "string",
+                        regex : "`",
+                        next  : "pop",
+                        merge : true
+                    }
+                ];
+                this.$rules["modxtag-filter-value"] = [
+                    {
+                        token : "string",
+                        regex : "[^`\\[]+",
+                        merge : true
+                        },{
+                        token : "string",
+                        regex : "\\[\\[.*?\\]\\]",
+                        merge : true
+                        }, {
+                        token : "string",
+                        regex : "\\\\$",
+                        next  : "pop",
+                        merge : true
+                        }, {
+                        token : "string",
+                        regex : "`",
+                        next  : "pop",
+                        merge : true
+                    }
                 ];
 
-                for (var modxState in modxRules){
-                    rules[modxState] = modxRules[modxState]
+                // add twig start tags to the HTML start tags
+                for (var rule in this.$rules) {
+                    this.$rules[rule].unshift({
+                        token : "comment", // opening tag
+                        regex : "\\[\\[\\-",
+                        push : 'modxtag-comment',
+                        merge: true
+                    }, {
+                        token : "support.constant", // opening tag
+                        regex : "\\[\\[",
+                        push : 'modxtag-start'
+                    });
                 }
-                var last = rules[state][rules[state].length-1];
-                if (last.regex == '[^<]+'){
-                    last.regex = '[^<\\[]+';
-                }
+
+                this.normalizeRules();
             }
+
+            ModxMixedHighlightRules.prototype = mode.HighlightRules.prototype;
+
             var Tokenizer = ace.require("ace/tokenizer").Tokenizer;
             var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
-            mode.$tokenizer = new Tokenizer(rules);
+            mode.$highlightRules = new ModxMixedHighlightRules(mode.HighlightRules);
+            mode.$tokenizer = new Tokenizer(mode.$highlightRules.getRules());
             this.bgTokenizer.setTokenizer(mode.$tokenizer);
             mode.$behaviour = mode.$behaviour || new Behaviour();
             mode.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
