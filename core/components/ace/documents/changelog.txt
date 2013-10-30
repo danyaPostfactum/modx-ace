@@ -1,5 +1,13 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.4.2
+====================================
+- Added: Undo coalescing
+- Changed: Mac fullscreen command is bound to Command+F12
+- Added: Drag delay (allow to start new selection inside current one) for Mac
+- Fixed: Use file extension of static chunks to detect code syntax
+
+
 Ace 1.4.1
 ====================================
 - Fixed: Tab handling
