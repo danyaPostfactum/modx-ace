@@ -1,5 +1,9 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.4.3
+====================================
+- Added: exside theme
+
 Ace 1.4.2
 ====================================
 - Added: Undo coalescing
