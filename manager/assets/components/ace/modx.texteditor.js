@@ -259,14 +259,24 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         };
         onChangeMode({}, this.editor);
 
+        var sresult = '';
+        var selems = document.getElementsByTagName('script');
+        for(var i =0, elem; elem = selems[ i++ ];) {
+            if (elem.getAttribute('src', 2) == MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js') {
+                sresult = elem;
+            }
+        }
+
         var Emmet = ace.require("ace/ext/emmet");
         var net = ace.require('ace/lib/net');
-        net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
-            Emmet.setCore(window.emmet);
-            this.editor.setOption("enableEmmet", true);
-            this.editor.on("changeMode", onChangeMode);
-            onChangeMode({}, this.editor);
-        }.bind(this));
+        if(!sresult){
+            net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
+                Emmet.setCore(window.emmet);
+                this.editor.setOption("enableEmmet", true);
+                this.editor.on("changeMode", onChangeMode);
+                onChangeMode({}, this.editor);
+            }.bind(this));
+        }
 
         ace.require('ace/ext/keybinding_menu').init(this.editor);
         this.editor.commands.addCommand({
