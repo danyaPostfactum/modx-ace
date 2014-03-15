@@ -84,6 +84,11 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         this.setUseSoftTabs(this.useSoftTabs);
         this.setUseWrapMode(this.useWrapMode);
 
+        ace.require("ace/ext/language_tools");
+        this.editor.setOptions({
+            enableBasicAutocompletion: true
+        });
+
         this.setTheme(this.theme);
         this.setMode(this.mode);
 
@@ -224,6 +229,8 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
     showInvisibles : MODx.config['ace.show_invisibles'] == true,
 
+    modxTags : false,
+
     initComponent : function() {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var Config = ace.require("ace/config");
@@ -234,41 +241,49 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     },
 
     onRender : function (ct, position) {
+        var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
 
         MODx.ux.Ace.superclass.onRender.call(this, ct, position);
 
+
         this.setMimeType(this.mimeType);
 
-        var snippetManager = ace.require("ace/snippets").snippetManager;
-        var snippets = MODx.config['ace.snippets'] || '';
-        snippetManager.register(snippetManager.parseSnippetFile(snippets), "_");
+        if (!MODx.ux.Ace.initialized) {
+            new MODx.ux.Ace.CodeCompleter();
+            var snippetManager = ace.require("ace/snippets").snippetManager;
+            var snippets = MODx.config['ace.snippets'] || '';
+            snippetManager.register(snippetManager.parseSnippetFile(snippets), "_");
 
-        var HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
-        var commands = new HashHandler();
-        commands.addCommand({
-            name: "insertsnippet",
-            bindKey: {win: "Tab", mac: "Tab"},
-            exec: function(editor) {
-                return snippetManager.expandWithTab(editor);
-            }
-        });
-        // to overwrite emmet
-        var onChangeMode = function(e, target) {
-            var editor = target;
-            editor.keyBinding.addKeyboardHandler(commands);
-        };
-        onChangeMode({}, this.editor);
-
-        var Emmet = ace.require("ace/ext/emmet");
-        var net = ace.require('ace/lib/net');
-        net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
-            Emmet.setCore(window.emmet);
-            this.editor.setOption("enableEmmet", true);
-            this.editor.on("changeMode", onChangeMode);
+            var HashHandler = ace.require("ace/keyboard/hash_handler").HashHandler;
+            var commands = new HashHandler();
+            commands.addCommand({
+                name: "insertsnippet",
+                bindKey: {win: "Tab", mac: "Tab"},
+                exec: function(editor) {
+                    return snippetManager.expandWithTab(editor);
+                }
+            });
+            // to overwrite emmet
+            var onChangeMode = function(e, target) {
+                var editor = target;
+                editor.keyBinding.addKeyboardHandler(commands);
+            };
             onChangeMode({}, this.editor);
-        }.bind(this));
 
-        ace.require('ace/ext/keybinding_menu').init(this.editor);
+            var Emmet = ace.require("ace/ext/emmet");
+            var net = ace.require('ace/lib/net');
+            net.loadScript(MODx.config['manager_url'] + 'assets/components/ace/emmet/emmet.js', function() {
+                Emmet.setCore(window.emmet);
+                this.editor.setOption("enableEmmet", true);
+                this.editor.on("changeMode", onChangeMode);
+                onChangeMode({}, this.editor);
+            }.bind(this));
+
+            ace.require('ace/ext/keybinding_menu').init(this.editor);
+
+            MODx.ux.Ace.initialized = true;
+        }
+
         this.editor.commands.addCommand({
             name: "showKeyboardShortcuts",
             bindKey: {win: "Ctrl-Alt-H", mac: "Command-Alt-H"},
@@ -657,301 +672,253 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
     setMode : function (mode){
         var editor = this.editor;
-        this.editor.session.setMode( 'ace/mode/' + mode );
-        this.editor.session.on('changeMode' ,function(data){
-            var mode = this.getMode();
-            if (mode.modx) return;
-            mode.modx = true;
+        if (!this.modxTags)
+            return editor.session.setMode('ace/mode/' + mode);
 
-            var rules = mode.getTokenizer().states;
+        var config = ace.require('ace/config');
+        config.loadModule(["mode", 'ace/mode/' + mode], function(m) {
+            var Mode = m.Mode;
 
-            function ModxMixedHighlightRules(HighlightRules) {
-                HighlightRules.call(this);
+            function ModxMixedMode() {
+                Mode.call(this);
+                var HighlightRules = this.HighlightRules;
 
-                this.$rules['modxtag-comment'] = [
-                    {
-                        token : "comment",
-                        regex : "[^\\[\\]]+",
-                        merge : true
-                    },{
-                        token : "comment",
-                        regex : "\\[\\[\\-.*?\\]\\]"
-                    },{
-                        token : "comment",
-                        regex : "\\s+",
-                        merge : true
-                    },
-                    {
-                        token : "comment",
-                        regex : "\\]\\]",
-                        next: "pop"
-                    }
-                ];
-                this.$rules['modxtag-start'] = [
-                    {
-                        token : "variable",
-                        regex : "!?(?:[%|*|~|\\+|\\$]|(?:\\+\\+)|(?:\\*#))?(?:[-_a-zA-Z0-9\\.]+)",
-                        push : [
-                            {include: "modxtag-filter"},
-                            {
-                                token: "keyword.operator",
-                                regex: "\\?",
-                                push: [
-                                    {token : "text", regex : "\\s+"},
-                                    {include: 'modxtag-property-string'},
-                                    {token: "", regex: "$"},
-                                    {token: '', regex: '', next: 'pop'}
-                                ]
-                            },
-                            {token : "text", regex : "\\s+"},
-                            {token: "", regex: "$"},
-                            {token: '', regex: '', next: 'pop'}
-                        ]
-                    },
-                    {
-                        token : "support.constant", // opening tag
-                        regex : "\\[\\[",
-                        push : 'modxtag-start'
-                    },
-                    {
-                        token : "text",
-                        regex : "\\s+"
-                    },
-                    {
-                        token : "support.constant",
-                        regex : "\\]\\]",
-                        next: "pop"
-                    }
-                ];
-                this.$rules['modxtag-propertyset'] = [
-                    {
-                        token : ['keyword.operator', "support.class"],
-                        regex : "(@)([-_a-zA-Z0-9\\.]+|\\[\\[.*?\\]\\])",
-                        next : 'modxtag-filter'
-                    },
-                    {
-                        token : "text",
-                        regex : "\\s+"
-                    },
-                    {token: "", regex: "$"},
-                    {
-                        token: "empty",
-                        regex: "",
-                        next: "modxtag-filter"
-                    }
-                ];
-                this.$rules['modxtag-filter'] = [
-                    {
-                        token : ['keyword.operator', "support.function"],
-                        regex : "(:)([-_a-zA-Z0-9]+|\\[\\[.*?\\]\\])",
-                        push : 'modxtag-filter-eq'
-                    },
-                    {
-                        token : "text",
-                        regex : "\\s+"
-                    }
-                ];
-                this.$rules['modxtag-filter-eq'] = [
-                    {
-                        token : ["keyword.operator"],
-                        regex : "="
+
+                function ModxMixedHighlightRules() {
+                    HighlightRules.call(this);
+
+                    this.$rules['modxtag-comment'] = [
+                        {
+                            token : "comment.modx",
+                            regex : "[^\\[\\]]+",
+                            merge : true
                         },{
-                        token : 'string',
-                        regex : '`',
-                        push: "modxtag-filter-value"
-                    },
-                    {
-                        token : "text",
-                        regex : "\\s+"
-                    },
-                    {
-                        token: "empty",
-                        regex: "",
-                        next: "pop"
-                    }
-                ];
-                this.$rules["modxtag-property-string"] = [
-                    {
-                        token : "entity.other.attribute-name",
-                        regex: "&"
-                    },
-                    {
-                        token: "entity.other.attribute-name",
-                        regex: "[-_a-zA-Z0-9]+"
-                    },
-                    {
-                        token : "string",
-                        regex : '`',
-                        push : "modxtag-attribute-value"
-                        }, {
-                        token : "keyword.operator",
-                        regex : "="
-                        }, {
-                        token : "entity.other.attribute-name",
-                        regex : "[-_a-zA-Z0-9]+"
-                    },
-                    {
-                        token : "comment",
-                        regex : "\\[\\[\\-.*?\\]\\]"
-                    },
-                    {
-                        token : "text",
-                        regex : "\\s+"
-                    }
-                ];
-                this.$rules["modxtag-attribute-value"] = [
-                    {
-                        token : "string",
-                        regex : "[^`\\[]+",
-                        merge : true
+                            token : "comment.modx",
+                            regex : "\\[\\[\\-.*?\\]\\]"
                         },{
-                        token : "string",
-                        regex : "[^`]+",
-                        merge : true
-                        },/* {
-                        token : "string",
-                        regex : "\\\\$",
-                        next  : "modxtag-attribute-value",
-                        merge : true
-                        },*/ {
-                        token : "string",
-                        regex : "`",
-                        next  : "pop",
-                        merge : true
-                    }
-                ];
-                this.$rules["modxtag-filter-value"] = [
-                    {
-                        token : "string",
-                        regex : "[^`\\[]+",
-                        merge : true
-                        },{
-                        token : "string",
-                        regex : "\\[\\[.*?\\]\\]",
-                        merge : true
-                        }, {
-                        token : "string",
-                        regex : "\\\\$",
-                        next  : "pop",
-                        merge : true
-                        }, {
-                        token : "string",
-                        regex : "`",
-                        next  : "pop",
-                        merge : true
-                    }
-                ];
+                            token : "comment.modx",
+                            regex : "\\s+",
+                            merge : true
+                        },
+                        {
+                            token : "paren.rparen.comment.modx",
+                            regex : "\\]\\]",
+                            next: "pop"
+                        }
+                    ];
+                    this.$rules['modxtag-start'] = [
+                        {
+                            token : ["cache-flag.variable.modx", "tag-token.variable.modx", "tag-name.variable.modx"],
+                            regex : "(!)?([%|*|~|\\+|\\$]|(?:\\+\\+)|(?:\\*#))?([-_a-zA-Z0-9\\.]+)",
+                            push : [
+                                {include: "modxtag-filter"},
+                                {
+                                    token: "tag-delimiter.keyword.operator.modx",
+                                    regex: "\\?",
+                                    push: [
+                                        {token : "text.modx", regex : "\\s+"},
+                                        {include: 'modxtag-property-string'},
+                                        {token: "", regex: "$"},
+                                        {token: '', regex: '', next: 'pop'}
+                                    ]
+                                },
+                                {token : "text.modx", regex : "\\s+"},
+                                {token: "", regex: "$"},
+                                {token: '', regex: '', next: 'pop'}
+                            ]
+                        },
+                        {
+                            token : "support.constant.paren.lparen.modx", // opening tag
+                            regex : "\\[\\[",
+                            push : 'modxtag-start'
+                        },
+                        {
+                            token : "text",
+                            regex : "\\s+"
+                        },
+                        {
+                            token : "support.constant.paren.rparen.tag-brackets.modx",
+                            regex : "\\]\\]",
+                            next: "pop"
+                        },
+                        {defaultToken: 'text.modx'}
+                    ];
+                    this.$rules['modxtag-propertyset'] = [
+                        {
+                            token : ['keyword.operator.modx', "support.class.modx"],
+                            regex : "(@)([-_a-zA-Z0-9\\.]+|\\[\\[.*?\\]\\])",
+                            next : 'modxtag-filter'
+                        },
+                        {
+                            token : "text",
+                            regex : "\\s+"
+                        },
+                        {token: "", regex: "$"},
+                        {
+                            token: "empty",
+                            regex: "",
+                            next: "modxtag-filter"
+                        }
+                    ];
+                    this.$rules['modxtag-filter'] = [
+                        {
+                            token : 'filter-delimiter.keyword.operator.modx',
+                            regex : ":",
+                            push : [
+                                {
+                                    token: "filter-name.support.function.modx",
+                                    regex: "[-_a-zA-Z0-9]+|\\[\\[.*?\\]\\]",
+                                    push: "modxtag-filter-eq"
+                                },
+                                {
+                                    token: "empty",
+                                    regex: "",
+                                    next: "pop"
+                                }
+                            ]
+                        },
+                        {
+                            token : "text",
+                            regex : "\\s+"
+                        }
+                    ];
+                    this.$rules['modxtag-filter-eq'] = [
+                        {
+                            token : ["keyword.operator.modx"],
+                            regex : "="
+                            },{
+                            token : 'string',
+                            regex : '`',
+                            push: "modxtag-filter-value"
+                        },
+                        {
+                            token : "text",
+                            regex : "\\s+"
+                        },
+                        {
+                            token: "empty",
+                            regex: "",
+                            next: "pop"
+                        }
+                    ];
+                    this.$rules["modxtag-property-string"] = [
+                        {
+                            token : "entity.other.attribute-name.modx",
+                            regex: "&"
+                        },
+                        {
+                            token: "entity.other.attribute-name.modx",
+                            regex: "[-_a-zA-Z0-9]+"
+                        },
+                        {
+                            token : "string.modx",
+                            regex : '`',
+                            push : "modxtag-attribute-value"
+                            }, {
+                            token : "keyword.operator.modx",
+                            regex : "="
+                            }, {
+                            token : "entity.other.attribute-name.modx",
+                            regex : "[-_a-zA-Z0-9]+"
+                        },
+                        {
+                            token : "comment.modx",
+                            regex : "\\[\\[\\-.*?\\]\\]"
+                        },
+                        {
+                            token : "property-string.text.modx",
+                            regex : "\\s+"
+                        }
+                    ];
+                    this.$rules["modxtag-attribute-value"] = [
+                        {
+                            token : "string.modx",
+                            regex : "[^`\\[]+",
+                            merge : true
+                            },{
+                            token : "string.modx",
+                            regex : "[^`]+",
+                            merge : true
+                            },/* {
+                            token : "string",
+                            regex : "\\\\$",
+                            next  : "modxtag-attribute-value",
+                            merge : true
+                            },*/ {
+                            token : "string.modx",
+                            regex : "`",
+                            next  : "pop",
+                            merge : true
+                        }
+                    ];
+                    this.$rules["modxtag-filter-value"] = [
+                        {
+                            token : "string.modx",
+                            regex : "[^`\\[]+",
+                            merge : true
+                            },{
+                            token : "string.modx",
+                            regex : "\\[\\[.*?\\]\\]",
+                            merge : true
+                            }, {
+                            token : "string.modx",
+                            regex : "\\\\$",
+                            next  : "pop",
+                            merge : true
+                            }, {
+                            token : "string.modx",
+                            regex : "`",
+                            next  : "pop",
+                            merge : true
+                        }
+                    ];
 
-                // add twig start tags to the HTML start tags
-                for (var rule in this.$rules) {
-                    this.$rules[rule].unshift({
-                        token : "comment", // opening tag
-                        regex : "\\[\\[\\-",
-                        push : 'modxtag-comment',
-                        merge: true
-                    }, {
-                        token : "support.constant", // opening tag
-                        regex : "\\[\\[",
-                        push : 'modxtag-start'
-                    });
+                    // add twig start tags to the HTML start tags
+                    for (var rule in this.$rules) {
+                        this.$rules[rule].unshift({
+                            token : "paren.lparen.comment.modx", // opening tag
+                            regex : "\\[\\[\\-",
+                            push : 'modxtag-comment',
+                            merge: true
+                        }, {
+                            token : "support.constant.paren.lparen.tag-brackets.modx", // opening tag
+                            regex : "\\[\\[",
+                            push : 'modxtag-start',
+                            merge : false
+                        });
+                    }
+
+                    this.normalizeRules();
                 }
 
-                this.normalizeRules();
-            }
+                ModxMixedHighlightRules.prototype = HighlightRules.prototype;
 
-            ModxMixedHighlightRules.prototype = mode.HighlightRules.prototype;
+                this.HighlightRules = ModxMixedHighlightRules;
 
-            var Tokenizer = ace.require("ace/tokenizer").Tokenizer;
-            var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
-            mode.$highlightRules = new ModxMixedHighlightRules(mode.HighlightRules);
-            mode.$tokenizer = new Tokenizer(mode.$highlightRules.getRules());
-            this.bgTokenizer.setTokenizer(mode.$tokenizer);
-            mode.$behaviour = mode.$behaviour || new Behaviour();
-            mode.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
-                if (text == '[') {
-                    var selection = editor.getSelectionRange();
-                    var selected = session.doc.getTextRange(selection);
-                    if (selected !== "") {
-                        return {
-                            text: '[' + selected + ']',
-                            selection: false
-                        };
-                    } else {
-                        return {
-                            text: '[]',
-                            selection: [1, 1]
-                        };
-                    }
-                } else if (text == ']') {
-                    var cursor = editor.getCursorPosition();
-                    var line = session.doc.getLine(cursor.row);
-                    var rightChar = line.substring(cursor.column, cursor.column + 1);
-                    if (rightChar == ']') {
-                        var matching = session.$findOpeningBracket(']', {column: cursor.column + 1, row: cursor.row});
-                        if (matching !== null) {
+                this.$behaviour = Object.create(this.$behaviour || new Behaviour());
+
+                this.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
+                    if (text == '[') {
+                        var selection = editor.getSelectionRange();
+                        var selected = session.doc.getTextRange(selection);
+                        if (selected !== "") {
                             return {
-                                text: '',
+                                text: '[' + selected + ']',
+                                selection: false
+                            };
+                        } else {
+                            return {
+                                text: '[]',
                                 selection: [1, 1]
                             };
                         }
-                    }
-                }
-            });
-            
-            mode.$behaviour.add("brackets", "deletion", function (state, action, editor, session, range) {
-                var selected = session.doc.getTextRange(range);
-                if (!range.isMultiLine() && selected == '[') {
-                    var line = session.doc.getLine(range.start.row);
-                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
-                    if (rightChar == ']') {
-                        range.end.column++;
-                        return range;
-                    }
-                }
-            });
-            mode.$behaviour.add("string_apostrophes", "insertion", function (state, action, editor, session, text) {
-                if (text == '`') {
-                    var quote = "`";
-                    var selection = editor.getSelectionRange();
-                    var selected = session.doc.getTextRange(selection);
-                    if (selected !== "") {
-                        return {
-                            text: quote + selected + quote,
-                            selection: false
-                        };
-                    } else {
+                    } else if (text == ']') {
                         var cursor = editor.getCursorPosition();
                         var line = session.doc.getLine(cursor.row);
-                        var leftChar = line.substring(cursor.column-1, cursor.column);
-
-                        // Find what token we're inside.
-                        var tokens = session.getTokens(selection.start.row);
-                        var col = 0, token;
-                        var quotepos = -1; // Track whether we're inside an open quote.
-
-                        for (var x = 0; x < tokens.length; x++) {
-                            token = tokens[x];
-                            if (token.type == "string") {
-                                quotepos = -1;
-                            } else if (quotepos < 0) {
-                                quotepos = token.value.indexOf(quote);
-                            }
-                            if ((token.value.length + col) > selection.start.column) {
-                                break;
-                            }
-                            col += tokens[x].value.length;
-                        }
-
-                        // Try and be smart about when we auto insert.
-                        if (!token || (quotepos < 0 && token.type !== "comment" && (token.type !== "string" || ((selection.start.column !== token.value.length+col-1) && token.value.lastIndexOf(quote) === token.value.length-1)))) {
-                            return {
-                                text: quote + quote,
-                                selection: [1,1]
-                            };
-                        } else if (token && token.type === "string") {
-                            // Ignore input and move right one if we're typing over the closing quote.
-                            var rightChar = line.substring(cursor.column, cursor.column + 1);
-                            if (rightChar == quote) {
+                        var rightChar = line.substring(cursor.column, cursor.column + 1);
+                        if (rightChar == ']') {
+                            var matching = session.$findOpeningBracket(']', {column: cursor.column + 1, row: cursor.row});
+                            if (matching !== null) {
                                 return {
                                     text: '',
                                     selection: [1, 1]
@@ -959,21 +926,316 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
                             }
                         }
                     }
-                }
-            });
-            mode.$behaviour.add("string_apostrophes", "deletion", function (state, action, editor, session, range) {
-                var selected = session.doc.getTextRange(range);
-                if (!range.isMultiLine() && (selected == '`')) {
-                    var line = session.doc.getLine(range.start.row);
-                    var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
-                    if (rightChar == '`') {
-                        range.end.column++;
-                        return range;
+                });
+                this.$behaviour.add("brackets", "deletion", function (state, action, editor, session, range) {
+                    var selected = session.doc.getTextRange(range);
+                    if (!range.isMultiLine() && selected == '[') {
+                        var line = session.doc.getLine(range.start.row);
+                        var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                        if (rightChar == ']') {
+                            range.end.column++;
+                            return range;
+                        }
                     }
-                }
+                });
+                this.$behaviour.add("string_apostrophes", "insertion", function (state, action, editor, session, text) {
+                    if (text == '`') {
+                        var quote = "`";
+                        var selection = editor.getSelectionRange();
+                        var selected = session.doc.getTextRange(selection);
+                        if (selected !== "") {
+                            return {
+                                text: quote + selected + quote,
+                                selection: false
+                            };
+                        } else {
+                            var cursor = editor.getCursorPosition();
+                            var line = session.doc.getLine(cursor.row);
+                            var leftChar = line.substring(cursor.column-1, cursor.column);
+
+                            // Find what token we're inside.
+                            var tokens = session.getTokens(selection.start.row);
+                            var col = 0, token;
+                            var quotepos = -1; // Track whether we're inside an open quote.
+
+                            for (var x = 0; x < tokens.length; x++) {
+                                token = tokens[x];
+                                if (token.type == "string.modx") {
+                                    quotepos = -1;
+                                } else if (quotepos < 0) {
+                                    quotepos = token.value.indexOf(quote);
+                                }
+                                if ((token.value.length + col) > selection.start.column) {
+                                    break;
+                                }
+                                col += tokens[x].value.length;
+                            }
+
+                            // Try and be smart about when we auto insert.
+                            if (!token || (quotepos < 0 && token.type !== "comment" && (token.type !== "string.modx" || ((selection.start.column !== token.value.length+col-1) && token.value.lastIndexOf(quote) === token.value.length-1)))) {
+                                return {
+                                    text: quote + quote,
+                                    selection: [1,1]
+                                };
+                            } else if (token && token.type === "string.modx") {
+                                // Ignore input and move right one if we're typing over the closing quote.
+                                var rightChar = line.substring(cursor.column, cursor.column + 1);
+                                if (rightChar == quote) {
+                                    return {
+                                        text: '',
+                                        selection: [1, 1]
+                                    };
+                                }
+                            }
+                        }
+                    }
+                });
+                this.$behaviour.add("string_apostrophes", "deletion", function (state, action, editor, session, range) {
+                    var selected = session.doc.getTextRange(range);
+                    if (!range.isMultiLine() && (selected == '`')) {
+                        var line = session.doc.getLine(range.start.row);
+                        var rightChar = line.substring(range.start.column + 1, range.start.column + 2);
+                        if (rightChar == '`') {
+                            range.end.column++;
+                            return range;
+                        }
+                    }
+                });
+            }
+            ModxMixedMode.prototype = Object.create(Mode.prototype, {
+                constructor: {value: ModxMixedMode}
             });
-        }.bind(this.editor.session));
+            editor.session.setMode(new ModxMixedMode());
+        }.bind(this));
+
     }
 });
+
+MODx.ux.Ace.initialized = false;
+
+MODx.ux.Ace.CodeCompleter = function() {
+    var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
+    var langTools = ace.require("ace/ext/language_tools");
+
+    var cache = {};
+
+    function loadCompletions(params, callback) {
+        Ext.Ajax.request({
+            url: MODx.config.connectors_url + 'components/ace/completions.php',
+            params: params,
+            success: function(response) {
+                var completions = JSON.parse(response.responseText);
+                callback(completions);
+            }
+        });
+    }
+
+    function gatherCompletions(completionParameters, callback) {
+        var wait = 0;
+        var completions = [];
+        completionParameters.forEach(function(parameters){
+            var data = cache[parameters.cacheKey];
+            if (!data) {
+                wait++;
+                loadCompletions(parameters.requestParams, function(data) {
+                    wait--;
+                    cache[parameters.cacheKey] = data;
+                    completions = completions.concat(parameters.prepare(data));
+                    wait || callback(null, completions);
+                });
+                return;
+            }
+            completions = completions.concat(parameters.prepare(data));
+        });
+        wait || callback(null, completions);
+    }
+
+    function prepareCompletions(completions, meta) {
+        return Object.keys(completions).map(function(completion){
+            return {
+                value: meta == 'chunk' ? '$' + completion : completion,
+                caption: completion,
+                meta: meta,
+                description: completions[completion],
+                score: 1000
+            };
+        });
+    }
+
+    function preparePropertyCompletions(completions) {
+        return Object.keys(completions).map(function(completion){
+            return {
+                caption: completion,
+                snippet: completion + '=`$0`',
+                meta: 'property',
+                description: completions[completion],
+                score: 1000
+            };
+        });
+    }
+
+    function hasType(token, type) {
+        var tokenTypes = token.type.split('.');
+        return type.split('.').every(function(type){
+            return (tokenTypes.indexOf(type) !== -1);
+        });
+    }
+
+    function isWhitespace(string) {
+        for (var i = 0; i < string.length; i++) {
+            var c = string[i];
+            if (!(c == ' ' || c == '\n' || c == '\r')) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function parseTag(iterator) {
+        var token = iterator.getCurrentToken();
+
+        if (!token)
+            return null;
+        if (token.type.substring(token.type.lastIndexOf('.') + 1) !== 'modx')
+            return null;
+        while(token && hasType(token, 'text.modx') && isWhitespace(token.value))
+        {
+            token = iterator.stepBackward();
+        }
+
+        if (!token)
+            return null;
+
+        // we are in modx tag
+
+        var completionType = 'object';
+        var objectName = '';
+        var classKey = 'modSnippet';
+
+        if (hasType(token, 'tag-name')) {// [[*tag|]]
+            objectName = token.value;
+            token = iterator.stepBackward();
+        }
+
+        if (hasType(token, 'tag-brackets') && token.value == '[[') {// [[|]]
+            classKey = 'modSnippet';
+        } else if (hasType(token, 'cache-flag')) {
+            //
+        } else if (hasType(token, 'tag-token') || hasType(token, 'text')) {// [[*|]]
+            switch (token.value) {
+                case '$':
+                    classKey = 'modChunk';
+                    break;
+                case '*':
+                    classKey = 'modTemplateVar';
+                    break;
+                case '++':
+                    classKey = 'modSystemSetting';
+                    break;
+                default:
+                    return null;
+            }
+        } else if (hasType(token, 'filter-name') || hasType(token, 'filter-delimiter')) {// [[*tag:filter|]], [[*tag:|]]
+            completionType = 'filter';
+        } else if (hasType(token, 'attribute-name') || hasType(token, 'tag-delimiter')) {// [[*tag?|]] , [[*tag? &prop|]]
+            objectName = (function() {
+                do {
+                    token = iterator.stepBackward();
+                } while (token && !(hasType(token, 'tag-name') || hasType(token, 'modxtag-start')));
+
+                if (token && hasType(token, 'tag-name'))
+                    return token.value;
+                return null;
+            })();
+            if (!objectName)
+                return null;
+            completionType = 'property';
+        } else {
+            return null;
+        }
+        return {
+            completionType: completionType,
+            classKey: classKey,
+            objectName: objectName,
+        };
+    }
+
+    langTools.addCompleter({
+        getCompletions: function(editor, session, pos, prefix, callback) {
+            var iterator = new TokenIterator(session, pos.row, pos.column);
+
+            var parsedInfo = parseTag(iterator);
+            if (!parsedInfo)
+                return callback(null);
+
+            var completionType = parsedInfo.completionType;
+            var classKey = parsedInfo.classKey;
+            var objectName = parsedInfo.objectName;
+
+            switch (completionType) {
+                case 'propertyset':
+                    break;
+                case 'lexiconentry':
+                    break;
+                case 'property':
+                    gatherCompletions([
+                        {
+                            cacheKey: classKey + '.' + objectName,
+                            requestParams: {action: 'getProperties', classKey: classKey, key: objectName},
+                            prepare: function(completions) {
+                                return preparePropertyCompletions(completions, 'property');
+                            }
+                        }
+                    ], callback);
+                    break;
+                case 'filter':
+                    gatherCompletions([
+                        {
+                            cacheKey: 'filter',
+                            requestParams: {action: 'getFilters'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'filter');
+                            }
+                        }, {
+                            cacheKey: 'modSnippet',
+                            requestParams: {action: 'getObjects', classKey: 'modSnippet'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'snippet');
+                            }
+                        },
+                    ], callback);
+                    break;
+                case 'object':
+                    var aliases = {
+                        'modSystemSetting': 'setting',
+                        'modTemplateVar': 'tv',
+                        'modSnippet': 'snippet',
+                        'modChunk': 'chunk'
+                    };
+                    alias = aliases[classKey];
+
+                    var completionParameters = [];
+                    completionParameters[0] = {
+                        cacheKey: classKey,
+                        requestParams: {action: 'getObjects', classKey: classKey},
+                        prepare: function(completions) {
+                            return prepareCompletions(completions, alias);
+                        }
+                    };
+                    if (classKey == 'modTemplateVar') {
+                        completionParameters[1] = {
+                            cacheKey: 'resourcefield',
+                            requestParams: {action: 'getResourceFields'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'field');
+                            }
+                        };
+                    }
+                    gatherCompletions(completionParameters, callback);
+                    break;
+            }
+        }
+    });
+}
 
 Ext.reg('modx-texteditor',MODx.ux.Ace);
