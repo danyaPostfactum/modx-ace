@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.4.3
+====================================
+- Added: MODx tag completions (Ctrl+Space)
+- Fixed: Issue caused AjaxManager (MODx Manager speed booster plugin) tree drag'n'drop bug
+
 Ace 1.4.2
 ====================================
 - Added: Undo coalescing
