@@ -51,6 +51,7 @@ $extensionMap = array(
     'less'  => 'text/x-less',
     'svg'   => 'image/svg+xml',
     'xml'   => 'application/xml',
+    'xsl'   => 'application/xml',
     'js'    => 'application/javascript',
     'json'  => 'application/json',
     'php'   => 'application/x-php',
@@ -58,6 +59,8 @@ $extensionMap = array(
     'txt'   => 'text/plain',
 );
 
+// Defines wether we should highlight modx tags
+$modxTags = false;
 switch ($modx->event->name) {
     case 'OnSnipFormPrerender':
         $field = 'modx-snippet-snippet';
@@ -66,6 +69,7 @@ switch ($modx->event->name) {
     case 'OnTempFormPrerender':
         $field = 'modx-template-content';
         $mimeType = 'text/html';
+        $modxTags = true;
         break;
     case 'OnChunkFormPrerender':
         $field = 'modx-chunk-snippet';
@@ -75,6 +79,7 @@ switch ($modx->event->name) {
         } else {
             $mimeType = 'text/html';
         }
+        $modxTags = true;
         break;
     case 'OnPluginFormPrerender':
         $field = 'modx-plugin-plugincode';
@@ -88,6 +93,7 @@ switch ($modx->event->name) {
         $field = 'modx-file-content';
         $extension = pathinfo($scriptProperties['file'], PATHINFO_EXTENSION);
         $mimeType = isset($extensionMap[$extension]) ? $extensionMap[$extension] : 'text/plain';
+        $modxTags = $extension == 'tpl';
         break;
     case 'OnDocFormPrerender':
         if (!$modx->controller->resourceArray) {
@@ -103,13 +109,14 @@ switch ($modx->event->name) {
             }
         }
 
+        $modxTags = true;
         break;
     default:
         return;
 }
 
 $script = "";
-
+$modxTags = json_encode($modxTags);
 if ($field) {
     $script .="
     setTimeout(function(){
@@ -122,7 +129,8 @@ if ($field) {
             height: textArea.height,
             name: textArea.name,
             value: textArea.getValue(),
-            mimeType: '$mimeType'
+            mimeType: '$mimeType',
+            modxTags: $modxTags
         });
 
         textArea.el.dom.removeAttribute('name');
@@ -154,7 +162,8 @@ if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor'
             height: parseInt(textArea.style.height) || 200,
             name: textArea.name,
             value: textArea.value,
-            mimeType: 'text/html'
+            mimeType: 'text/html',
+            modxTags: true
         });
 
         textArea.name = '';
