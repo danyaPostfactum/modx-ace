@@ -138,7 +138,11 @@ if ($field) {
         textEditor.render(textArea.el.dom.parentNode);
         textArea.setSize = function(){textEditor.setSize.apply(textEditor, arguments)}
         textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
-        MODx.load({
+        textEditor.editor.on('change', function(e){textArea.fireEvent('change', e);});
+        textArea.on('destroy', function() {textEditor.destroy();});
+        if (!$modxTags)
+            return;
+        var dropTarget = MODx.load({
             xtype: 'modx-treedrop',
             target: textEditor,
             targetEl: textEditor.el,
@@ -149,6 +153,7 @@ if ($field) {
             }).bind(textEditor),
             iframe: true
         });
+        textArea.on('destroy', function() {dropTarget.destroy();});
     });";
 }
 
