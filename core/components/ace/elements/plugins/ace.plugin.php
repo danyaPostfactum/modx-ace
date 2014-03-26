@@ -15,32 +15,13 @@ if ($modx->event->name == 'OnRichTextEditorRegister') {
     return;
 }
 
-if ($modx->getOption('which_element_editor',null,'Ace') !== 'Ace') {
+if ($modx->getOption('which_element_editor', null, 'Ace') !== 'Ace') {
     return;
 }
 
-$ace = $modx->getService('ace','Ace',$modx->getOption('ace.core_path',null,$modx->getOption('core_path').'components/ace/').'model/ace/');
+$ace = $modx->getService('ace', 'Ace', $modx->getOption('ace.core_path', null, $modx->getOption('core_path').'components/ace/').'model/ace/');
 
 $ace->initialize();
-
-if ($modx->event->name == 'OnManagerPageBeforeRender') {
-    // older modx versions has no these styles
-    $modx->controller->addHtml('<style>'."
-        .x-form-textarea{
-        border-radius:2px;
-        position: relative;
-        background-color: #fbfbfb;
-        background-image: none;
-        border: 1px solid;
-        border-color: #CCCCCC;
-        }
-        .x-form-focus {
-        border-color: #658F1A;
-        background-color: #FFFFFF;
-        }
-    ".'</style>');
-    return;
-}
 
 $extensionMap = array(
     'tpl'   => 'text/html',
@@ -115,68 +96,16 @@ switch ($modx->event->name) {
         return;
 }
 
-$script = "";
 $modxTags = json_encode($modxTags);
+$script = "";
 if ($field) {
-    $script .="
-    setTimeout(function(){
-        var textArea = Ext.getCmp('$field');
-        var textEditor = MODx.load({
-            xtype: 'modx-texteditor',
-            enableKeyEvents: true,
-            anchor: textArea.anchor,
-            width: 'auto',
-            height: textArea.height,
-            name: textArea.name,
-            value: textArea.getValue(),
-            mimeType: '$mimeType',
-            modxTags: $modxTags
-        });
-
-        textArea.el.dom.removeAttribute('name');
-        textArea.el.setStyle('display', 'none');
-        textEditor.render(textArea.el.dom.parentNode);
-        textArea.setSize = function(){textEditor.setSize.apply(textEditor, arguments)}
-        textEditor.on('keydown', function(e){textArea.fireEvent('keydown', e);});
-        textEditor.editor.on('change', function(e){textArea.fireEvent('change', e);});
-        textArea.on('destroy', function() {textEditor.destroy();});
-        if (!$modxTags)
-            return;
-        var dropTarget = MODx.load({
-            xtype: 'modx-treedrop',
-            target: textEditor,
-            targetEl: textEditor.el,
-            onInsert: (function(s){
-                this.insertAtCursor(s);
-                this.focus();
-                return true;
-            }).bind(textEditor),
-            iframe: true
-        });
-        textArea.on('destroy', function() {dropTarget.destroy();});
-    });";
+    $script .= "MODx.ux.Ace.replaceComponent('$field', '$mimeType', $modxTags);";
 }
 
 if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor')) {
-    $script .= "
-    var textAreas = Ext.query('.modx-richtext');
-    textAreas.forEach(function(textArea){
-        var htmlEditor = MODx.load({
-            xtype: 'modx-texteditor',
-            width: 'auto',
-            height: parseInt(textArea.style.height) || 200,
-            name: textArea.name,
-            value: textArea.value,
-            mimeType: 'text/html',
-            modxTags: true
-        });
-
-        textArea.name = '';
-        textArea.style.display = 'none';
-
-        htmlEditor.render(textArea.parentNode);
-        htmlEditor.editor.on('key', function(e){ MODx.fireResourceFormChange() });
-    });";
+    $script .= "MODx.ux.Ace.replaceTextAreas(Ext.query('.modx-richtext'));";
 }
 
-$modx->controller->addHtml('<script>Ext.onReady(function() {' . $script . '});</script>');
+if ($script) {
+    $modx->controller->addHtml('<script>Ext.onReady(function() {' . $script . '});</script>');
+}
