@@ -1,8 +1,8 @@
 --------------------
 Extra: Ace
 --------------------
-Version: 1.4.3
-Created: March 15th, 2014
+Version: 1.5.0
+Created: March 26th, 2014
 Since: March 29th, 2012
 Author: Danil Kostin <danya.postfactum@gmail.com>
 License: GNU GPLv2 (or later at your option)

@@ -1,5 +1,11 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.5.0
+====================================
+- Changed: Assets are moved back to /assets/
+- Fixed: MODx tag completions (was completely broken)
+- Added: Editor height setting
+
 Ace 1.4.3
 ====================================
 - Added: MODx tag completions (Ctrl+Space)
