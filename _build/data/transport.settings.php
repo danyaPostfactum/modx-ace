@@ -73,5 +73,14 @@ $settings['snippets']->fromArray(array(
         'area' => 'general'
     ),'',true,true);
 
+$settings['height']= $modx->newObject('modSystemSetting');
+$settings['height']->fromArray(array(
+        'key' => 'ace.height',
+        'xtype' => 'textfield',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
 
 return $settings;

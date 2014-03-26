@@ -24,7 +24,7 @@ $sources = array(
     'lexicon' => $root . 'core/components/'.PKG_NAMESPACE.'/lexicon/',
     'documents' => $root.'core/components/'.PKG_NAMESPACE.'/documents/',
     'elements' => $root.'core/components/'.PKG_NAMESPACE.'/elements/',
-    'source_manager_assets' => $root.'manager/assets/components/'.PKG_NAMESPACE,
+    'source_assets' => $root.'assets/components/'.PKG_NAMESPACE,
     'source_core' => $root.'core/components/'.PKG_NAMESPACE,
 );
 unset($root);
@@ -85,8 +85,8 @@ $vehicle = $builder->createVehicle($plugin, $attributes);
 
 $modx->log(modX::LOG_LEVEL_INFO,'Adding file resolvers to plugin...');
 $vehicle->resolve('file',array(
-    'source' => $sources['source_manager_assets'],
-    'target' => "return MODX_MANAGER_PATH . 'assets/components/';",
+    'source' => $sources['source_assets'],
+    'target' => "return MODX_ASSETS_PATH . 'components/';",
 ));
 $vehicle->resolve('file',array(
     'source' => $sources['source_core'],
