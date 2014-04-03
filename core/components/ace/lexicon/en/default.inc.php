@@ -40,6 +40,6 @@ $_lang['setting_ace.fold_widgets_desc'] = 'Show fold widgets in the gutter.';
 $_lang['setting_ace.show_invisibles'] = 'Invisible characters';
 $_lang['setting_ace.show_invisibles_desc'] = 'Show whitespaces, tabs and line endings.';
 $_lang['setting_ace.snippets'] = 'Snippets';
-$_lang['setting_ace.snippets_desc'] = "Code snippets you can expand by pressing “Tab” key. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09";
+$_lang['setting_ace.snippets_desc'] = 'Code snippets you can expand by pressing “Tab” key. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09';
 $_lang['setting_ace.height'] = 'Edit area height';
 $_lang['setting_ace.height_desc'] = 'Editor height in pixel unit. If left blank, a defaul height will be used.';

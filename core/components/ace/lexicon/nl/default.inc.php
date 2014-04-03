@@ -37,6 +37,6 @@ $_lang['setting_ace.autogrow_desc'] = 'Laat de editor automatisch meegroeien tot
 $_lang['setting_ace.autogrowmax'] = 'Automatisch groeien max.';
 $_lang['setting_ace.autogrowmax_desc'] = 'De maximaal aantal lijnen waarna de editor stopt met groeien.';
 $_lang['setting_ace.snippets'] = 'Snippets';
-$_lang['setting_ace.snippets_desc'] = "Code snippets you can expand by pressing “Tab” key. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09";
+$_lang['setting_ace.snippets_desc'] = 'Code snippets you can expand by pressing “Tab” key. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09';
 $_lang['setting_ace.height'] = 'Edit area height';
 $_lang['setting_ace.height_desc'] = 'Editor height in pixel unit. If left blank, a defaul height will be used.';
