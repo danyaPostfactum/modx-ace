@@ -109,3 +109,6 @@ if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor'
 if ($script) {
     $modx->controller->addHtml('<script>Ext.onReady(function() {' . $script . '});</script>');
 }
+
+return;
+
