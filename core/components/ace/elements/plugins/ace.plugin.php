@@ -42,6 +42,7 @@ $extensionMap = array(
 
 // Defines wether we should highlight modx tags
 $modxTags = false;
+$mode = '';
 switch ($modx->event->name) {
     case 'OnSnipFormPrerender':
         $field = 'modx-snippet-snippet';
@@ -51,6 +52,9 @@ switch ($modx->event->name) {
         $field = 'modx-template-content';
         $mimeType = 'text/html';
         $modxTags = true;
+        if ($modx->getOption('pdotools_fenom_parser')) {
+            $mode = 'smarty';
+        }
         break;
     case 'OnChunkFormPrerender':
         $field = 'modx-chunk-snippet';
@@ -61,6 +65,9 @@ switch ($modx->event->name) {
             $mimeType = 'text/html';
         }
         $modxTags = true;
+        if ($modx->getOption('pdotools_fenom_default')) {
+            $mode = 'smarty';
+        }
         break;
     case 'OnPluginFormPrerender':
         $field = 'modx-plugin-plugincode';
@@ -89,17 +96,19 @@ switch ($modx->event->name) {
                 $field = false;
             }
         }
-
         $modxTags = true;
+        if ($modx->getOption('pdotools_fenom_parser')) {
+            $mode = 'smarty';
+        }
         break;
     default:
         return;
 }
 
-$modxTags = json_encode($modxTags);
+$modxTags = (int) $modxTags;
 $script = "";
 if ($field) {
-    $script .= "MODx.ux.Ace.replaceComponent('$field', '$mimeType', $modxTags);";
+    $script .= "MODx.ux.Ace.replaceComponent('$field', '$mimeType', $modxTags, '$mode');";
 }
 
 if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor')) {
@@ -107,6 +116,6 @@ if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor'
 }
 
 if ($script) {
+    //$modx->controller->addHtml('<style>.ace_editor {width: 100% !important;}</style>');
     $modx->controller->addHtml('<script>Ext.onReady(function() {' . $script . '});</script>');
-    $modx->controller->addHtml('<style>.ace_editor {width: 100% !important;}</style>');
 }

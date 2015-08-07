@@ -8,13 +8,10 @@
  
 $tstart = microtime(true);
 set_time_limit(0);
- 
-/* define version */
-define('PKG_NAME','Ace');
-define('PKG_NAMESPACE','ace');
-define('PKG_VERSION','1.5.1');
-define('PKG_RELEASE','pl');
- 
+
+header('Content-Type:text/html;charset=utf-8');
+require_once 'build.config.php';
+
 /* define sources */
 $root = dirname(dirname(__FILE__)).'/';
 $sources = array(
@@ -135,5 +132,50 @@ $builder->pack();
 $tend= explode(" ", microtime());
 $tend= $tend[1] + $tend[0];
 $totalTime= sprintf("%2.4f s",($tend - $tstart));
-$modx->log(modX::LOG_LEVEL_INFO,"\n<br />Package Built.<br />\nExecution time: {$totalTime}\n");
-exit ();
+
+$signature = $builder->getSignature();
+if (defined('PKG_AUTO_INSTALL') && PKG_AUTO_INSTALL) {
+    $sig = explode('-', $signature);
+    $versionSignature = explode('.', $sig[1]);
+
+    /* @var modTransportPackage $package */
+    if (!$package = $modx->getObject('transport.modTransportPackage', array('signature' => $signature))) {
+        $package = $modx->newObject('transport.modTransportPackage');
+        $package->set('signature', $signature);
+        $package->fromArray(array(
+            'created' => date('Y-m-d h:i:s'),
+            'updated' => null,
+            'state' => 1,
+            'workspace' => 1,
+            'provider' => 0,
+            'source' => $signature . '.transport.zip',
+            'package_name' => PKG_NAME,
+            'version_major' => $versionSignature[0],
+            'version_minor' => !empty($versionSignature[1]) ? $versionSignature[1] : 0,
+            'version_patch' => !empty($versionSignature[2]) ? $versionSignature[2] : 0,
+        ));
+        if (!empty($sig[2])) {
+            $r = preg_split('/([0-9]+)/', $sig[2], -1, PREG_SPLIT_DELIM_CAPTURE);
+            if (is_array($r) && !empty($r)) {
+                $package->set('release', $r[0]);
+                $package->set('release_index', (isset($r[1]) ? $r[1] : '0'));
+            }
+            else {
+                $package->set('release', $sig[2]);
+            }
+        }
+        $package->save();
+    }
+
+    if ($package->install()) {
+        $modx->runProcessor('system/clearcache');
+    }
+}
+if (!empty($_GET['download'])) {
+    echo '<script>document.location.href = "/core/packages/' . $signature . '.transport.zip' . '";</script>';
+}
+
+$modx->log(modX::LOG_LEVEL_INFO, "\n<br />Execution time: {$totalTime}\n");
+if (!XPDO_CLI_MODE) {
+    echo '</pre>';
+}

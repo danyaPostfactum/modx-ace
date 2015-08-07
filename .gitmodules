@@ -1,3 +1,0 @@
-[submodule "assets/components/ace/ace"]
-	path = assets/components/ace/ace
-	url = git@github.com:danyaPostfactum/modx-ace-build.git

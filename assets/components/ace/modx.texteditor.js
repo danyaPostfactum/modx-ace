@@ -46,7 +46,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             this.defaultAutoCreate = {
                 tag: "div",
                 cls: "x-form-textarea",
-                style:"width:100px;height:60px"
+                style:"width:100%;height:60px"
             };
         }
         Ext.ux.Ace.superclass.onRender.call(this, ct, position);
@@ -58,6 +58,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         }
 
         this.editor = ace.edit(this.el.dom);
+        this.editor.$blockScrolling = Infinity;
 
         this.el.appendChild(this.valueHolder);
         this.el.dom.removeAttribute('name');
@@ -424,14 +425,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     }
 });
 
-MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
+MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags, mode) {
     var textArea = Ext.getCmp(id);
     if (!textArea) {
         // Workaround for File Update panel (fix issue, caused by wrong event order)
         return setTimeout(function() {
             var textArea = Ext.getCmp(id);
             if (textArea)
-                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags);
+                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags, mode);
         });
     }
     var textEditor = MODx.load({
@@ -443,6 +444,7 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
         name: textArea.name,
         value: textArea.getValue(),
         mimeType: mimeType,
+        mode: mode || 'text',
         modxTags: modxTags
     });
 
@@ -468,7 +470,7 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
     textArea.on('destroy', function() {dropTarget.destroy();});
 };
 
-MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
+MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType, mode) {
     textAreas.forEach(function(textArea){
         var editor = MODx.load({
             xtype: 'modx-texteditor',
@@ -477,6 +479,7 @@ MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
             name: textArea.name,
             value: textArea.value,
             mimeType: mimeType || 'text/html',
+            mode: mode || 'text',
             modxTags: true
         });
 
@@ -990,7 +993,7 @@ MODx.ux.Ace.CodeCompleter = function() {
 
             var parsedInfo = parseTag(iterator);
             if (!parsedInfo)
-                return callback(null);
+                return callback(null, {});
 
             var completionType = parsedInfo.completionType;
             var classKey = parsedInfo.classKey;

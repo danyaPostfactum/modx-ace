@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.6.0
+====================================
+- Added: "Smarty" syntax for support of Fenom in chunks.
+- Updated: Ace to version 1.2.0.
+
 Ace 1.5.1
 ====================================
 - Fixed: Bug with narrowing of the textarea.
