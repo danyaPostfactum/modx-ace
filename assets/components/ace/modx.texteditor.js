@@ -236,6 +236,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var config = ace.require("ace/config");
         var acePath = MODx.config['assets_url'] + 'components/ace/ace';
+        config.set('basePath', acePath);
         config.set('modePath', acePath);
         config.set('themePath', acePath);
         config.set('workerPath', acePath);

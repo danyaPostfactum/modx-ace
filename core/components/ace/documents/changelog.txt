@@ -1,5 +1,9 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.6.1
+====================================
+- Fixed : Work with enabled system setting "compress_js".
+
 Ace 1.6.0
 ====================================
 - Added: "Smarty" syntax for support of Fenom in chunks.
