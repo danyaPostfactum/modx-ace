@@ -2,7 +2,7 @@
 
 define('PKG_NAME','Ace');
 define('PKG_NAMESPACE','ace');
-define('PKG_VERSION','1.6.1');
+define('PKG_VERSION','1.6.2');
 define('PKG_RELEASE','pl');
 define('PKG_AUTO_INSTALL', true);
 

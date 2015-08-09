@@ -426,14 +426,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     }
 });
 
-MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags, mode) {
+MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
     var textArea = Ext.getCmp(id);
     if (!textArea) {
         // Workaround for File Update panel (fix issue, caused by wrong event order)
         return setTimeout(function() {
             var textArea = Ext.getCmp(id);
             if (textArea)
-                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags, mode);
+                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags);
         });
     }
     var textEditor = MODx.load({
@@ -445,7 +445,6 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags, mode) {
         name: textArea.name,
         value: textArea.getValue(),
         mimeType: mimeType,
-        mode: mode || 'text',
         modxTags: modxTags
     });
 
@@ -471,7 +470,7 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags, mode) {
     textArea.on('destroy', function() {dropTarget.destroy();});
 };
 
-MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType, mode) {
+MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
     textAreas.forEach(function(textArea){
         var editor = MODx.load({
             xtype: 'modx-texteditor',
@@ -480,7 +479,6 @@ MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType, mode) {
             name: textArea.name,
             value: textArea.value,
             mimeType: mimeType || 'text/html',
-            mode: mode || 'text',
             modxTags: true
         });
 
@@ -708,6 +706,9 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 
         this.HighlightRules = ModxMixedHighlightRules;
 
+        if (typeof this.$behaviour == 'undefined') {
+            var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
+        }
         this.$behaviour = Object.create(this.$behaviour || new Behaviour());
 
         this.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
@@ -822,21 +823,23 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 };
 
 MODx.ux.Ace.mimeTypes = {
-     'text/x-php'            : 'php'
-    ,'application/x-php'     : 'php'
-    ,'text/x-sql'            : 'sql'
-    ,'text/x-scss'           : 'scss'
-    ,'text/x-less'           : 'less'
-    ,'text/xml'              : 'xml'
-    ,'application/xml'       : 'xml'
-    ,'image/svg+xml'         : 'svg'
-    ,'text/html'             : 'html'
-    ,'application/xhtml+xml' : 'html'
-    ,'text/javascript'       : 'javascript'
-    ,'application/javascript': 'javascript'
-    ,'application/json'      : 'json'
-    ,'text/css'              : 'css'
-    ,'text/plain'            : 'text'
+    'text/x-smarty'         : 'smarty',
+    'text/html'             : 'html',
+    'application/xhtml+xml' : 'html',
+    'text/css'              : 'css',
+    'text/x-scss'           : 'scss',
+    'text/x-less'           : 'less',
+    'image/svg+xml'         : 'svg',
+    'application/xml'       : 'xml',
+    'text/xml'              : 'xml',
+    'text/javascript'       : 'javascript',
+    'application/javascript': 'javascript',
+    'application/json'      : 'json',
+    'text/x-php'            : 'php',
+    'application/x-php'     : 'php',
+    'text/x-sql'            : 'sql',
+    'text/x-markdown'       : 'markdown',
+    'text/plain'            : 'text',
 };
 
 MODx.ux.Ace.initialized = false;
