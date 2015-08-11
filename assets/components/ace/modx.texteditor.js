@@ -298,6 +298,9 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             onChangeMode({}, this.editor);
 
             var Emmet = ace.require("ace/ext/emmet");
+            Emmet.isSupportedMode = function(modeId) {
+                return modeId && /css|less|scss|sass|stylus|html|php|twig|ejs|handlebars|smarty/.test(modeId);
+            };
             var net = ace.require('ace/lib/net');
             net.loadScript(MODx.config['assets_url'] + 'components/ace/emmet/emmet.js', function() {
                 Emmet.setCore(window.emmet);

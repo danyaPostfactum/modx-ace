@@ -1,5 +1,9 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.6.3
+====================================
+- Fixed: Support of emmet in smarty mode.
+
 Ace 1.6.2
 ====================================
 - Fixed: Editor mode handling.
