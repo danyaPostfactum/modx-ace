@@ -843,6 +843,7 @@ MODx.ux.Ace.mimeTypes = {
     'text/x-sql'            : 'sql',
     'text/x-markdown'       : 'markdown',
     'text/plain'            : 'text',
+    'text/x-twig'           : 'twig'
 };
 
 MODx.ux.Ace.initialized = false;

@@ -41,6 +41,7 @@ $extensionMap = array(
     'sql'   => 'text/x-sql',
     'md'    => 'text/x-markdown',
     'txt'   => 'text/plain',
+    'twig'  => 'text/x-twig'
 );
 
 // Defines wether we should highlight modx tags
@@ -53,9 +54,19 @@ switch ($modx->event->name) {
     case 'OnTempFormPrerender':
         $field = 'modx-template-content';
         $modxTags = true;
-        $mimeType = $modx->getOption('pdotools_fenom_parser')
-            ? 'text/x-smarty'
-            : 'text/html';
+
+        switch (true) {
+            case $modx->getOption('twiggy_class'):
+                $mimeType = 'text/x-twig';
+                break;
+            case $modx->getOption('pdotools_fenom_parser'):
+                $mimeType = 'text/x-smarty';
+                break;
+            default:
+                $mimeType = 'text/html';
+                break;
+        }
+
         break;
     case 'OnChunkFormPrerender':
         $field = 'modx-chunk-snippet';
@@ -66,9 +77,19 @@ switch ($modx->event->name) {
             $mimeType = 'text/html';
         }
         $modxTags = true;
-        $mimeType = $modx->getOption('pdotools_fenom_default')
-            ? 'text/x-smarty'
-            : 'text/html';
+
+        switch (true) {
+            case $modx->getOption('twiggy_class'):
+                $mimeType = 'text/x-twig';
+                break;
+            case $modx->getOption('pdotools_fenom_default'):
+                $mimeType = 'text/x-smarty';
+                break;
+            default:
+                $mimeType = 'text/html';
+                break;
+        }
+
         break;
     case 'OnPluginFormPrerender':
         $field = 'modx-plugin-plugincode';
@@ -92,9 +113,16 @@ switch ($modx->event->name) {
         }
         $field = 'ta';
         $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
-        if ($mimeType == 'text/html' && $modx->getOption('pdotools_fenom_parser')) {
-            $mimeType = 'text/x-smarty';
+
+        switch (true) {
+            case $mimeType == 'text/html' && $modx->getOption('twiggy_class'):
+                $mimeType = 'text/x-twig';
+                break;
+            case $mimeType == 'text/html' && $modx->getOption('pdotools_fenom_parser'):
+                $mimeType = 'text/x-smarty';
+                break;
         }
+
         if ($modx->getOption('use_editor')){
             $richText = $modx->controller->resourceArray['richtext'];
             $classKey = $modx->controller->resourceArray['class_key'];
