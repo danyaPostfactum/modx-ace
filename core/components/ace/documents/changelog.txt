@@ -3,6 +3,7 @@ Changelog for Ace integration into MODx Revolution.
 Ace 1.6.5
 ====================================
 - Added: "Twig" syntax for support of Twig in chunks.
+- Changed: Plugin is not static anymore.
 
 Ace 1.6.4
 ====================================
