@@ -127,15 +127,16 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         if(!this.grow){
             return;
         }
-        var linesCount = this.editor.getSession().getDocument().getLength();
+        var linesCount = this.editor.getSession().getScreenLength();
         var lineHeight = this.editor.renderer.lineHeight;
         var scrollBar =  this.editor.renderer.scrollBar.getWidth();
         var bordersWidth = this.el.getBorderWidth('tb');
+		var bottomOffset = lineHeight*5+scrollBar;
 
-        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + scrollBar + bordersWidth, this.growMin));
+        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bottomOffset + bordersWidth, this.growMin));
         if(h != this.lastHeight){
             this.lastHeight = h;
-            this.el.setHeight(h);
+            this.setHeight(h);
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
@@ -240,6 +241,11 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         config.set('modePath', acePath);
         config.set('themePath', acePath);
         config.set('workerPath', acePath);
+		if(MODx.config['ace.grow']!==undefined&&MODx.config['ace.grow']!==''){
+            this.grow = true;
+            this.growMax = parseInt(MODx.config['ace.grow'])||Infinity;
+            this.growMin = this.height;
+        }
         this.windows = [];
     },
 
