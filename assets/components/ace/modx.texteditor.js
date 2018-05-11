@@ -124,21 +124,37 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     autoSize: function(){
-        if(!this.grow){
-            return;
-        }
         var linesCount = this.editor.getSession().getScreenLength();
         var lineHeight = this.editor.renderer.lineHeight;
         var scrollBar =  this.editor.renderer.scrollBar.getWidth();
         var bordersWidth = this.el.getBorderWidth('tb');
-		var bottomOffset = lineHeight*5+scrollBar;
+        var bottomOffset = lineHeight*5+scrollBar;
 
-        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bottomOffset + bordersWidth, this.growMin));
-        if(h != this.lastHeight){
+        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bordersWidth + bottomOffset, this.growMin));
+        if(this.grow && h != this.lastHeight){
             this.lastHeight = h;
             this.setHeight(h);
             this.editor.resize();
             this.fireEvent("autosize", this, h);
+        }
+
+        var aceSearch = Ext.select('.ace_search').elements[0];
+        var triggerOffset = 150;
+        var defaultStyles={
+            position:null
+            ,bottom:null
+            ,top:null
+            ,borderRadius:null
+        };
+        var fixedStyles={
+            position:'fixed'
+            ,bottom:'0'
+            ,top:'initial'
+            ,borderRadius:'5px 0px 0px 0'
+        };
+        if(aceSearch){
+        	if(h>=window.innerHeight-triggerOffset)Ext.apply(aceSearch.style,fixedStyles);
+        	else Ext.apply(aceSearch.style,defaultStyles);
         }
     },
 
