@@ -43,3 +43,5 @@ $_lang['setting_ace.snippets'] = 'Snippets';
 $_lang['setting_ace.snippets_desc'] = 'Code snippets you can expand by pressing “Tab” key. Snippet example:<br /><br /><pre>\nsnippet getr\n	[!getResources? parents=`${1}`${2}]]\n</pre></br>You can insert “Tab” character by pressing Alt + 09';
 $_lang['setting_ace.height'] = 'Edit area height';
 $_lang['setting_ace.height_desc'] = 'Editor height in pixel unit. If left blank, a defaul height will be used.';
+$_lang ['setting_ace.grow'] = 'Fit height to text';
+$_lang ['setting_ace.grow_desc'] = 'The height of the editor will be adjusted to the text. The minimum height will be equal to the option ace.height. Possible values: Empty - height does not fit the text; The number is greater than 0 - the height is adjusted to the text but not more than the value; 0 - height is customized for text, height is unlimited. ';
