@@ -131,14 +131,29 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         var bottomOffset = lineHeight*5+scrollBar;
 
         var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bordersWidth + bottomOffset, this.growMin));
-        if(this.grow && h != this.lastHeight){
-            this.lastHeight = h;
+        var heightChanged = h!=this.lastHeight;
+        if(this.grow && heightChanged){
             this.setHeight(h);
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
-
-        var aceSearch = Ext.select('.ace_search').elements[0];
+        
+        if(!this.editor.searchBox || heightChanged){
+            if(this.editor.searchBox)this.detectSearchBoxPosition(h);
+            else{
+                var that = this;
+                ace.config.loadModule("ace/ext/searchbox",function(m){
+                    m.Search(that.editor);
+                    that.editor.searchBox.hide();
+                    that.detectSearchBoxPosition(h);
+                });
+            }
+        }
+        
+        if(heightChanged)this.lastHeight = h;
+    },
+    
+    detectSearchBoxPosition : function(editorHeight){
         var triggerOffset = 150;
         var defaultStyles={
             position:null
@@ -152,12 +167,10 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             ,top:'initial'
             ,borderRadius:'5px 0px 0px 0'
         };
-        if(aceSearch){
-        	if(h>=window.innerHeight-triggerOffset)Ext.apply(aceSearch.style,fixedStyles);
-        	else Ext.apply(aceSearch.style,defaultStyles);
-        }
+        if(editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
+        else Ext.apply(this.editor.searchBox.element.style,defaultStyles);
     },
-
+    
     setSize : function(width, height){
         Ext.ux.Ace.superclass.setSize.apply(this, arguments);
         this.editor.resize(true);
@@ -257,7 +270,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         config.set('modePath', acePath);
         config.set('themePath', acePath);
         config.set('workerPath', acePath);
-		if(MODx.config['ace.grow']!==undefined&&MODx.config['ace.grow']!==''){
+        if(MODx.config['ace.grow']!==undefined&&MODx.config['ace.grow']!==''){
             this.grow = true;
             this.growMax = parseInt(MODx.config['ace.grow'])||Infinity;
             this.growMin = this.height;
