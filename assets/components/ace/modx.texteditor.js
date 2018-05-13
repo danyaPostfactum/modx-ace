@@ -167,7 +167,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             ,top:'initial'
             ,borderRadius:'5px 0px 0px 0'
         };
-        if(editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
+        if(!this.isFullscreen&&editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
         else Ext.apply(this.editor.searchBox.element.style,defaultStyles);
     },
     
