@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.7.0
+====================================
+- Added: new system setting "ace.grow".
+- Added: new system setting "ace.html_elements_mime".
+
 Ace 1.6.5
 ====================================
 - Added: "Twig" syntax for support of Twig in chunks.

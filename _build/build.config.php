@@ -2,7 +2,7 @@
 
 define('PKG_NAME','Ace');
 define('PKG_NAMESPACE','ace');
-define('PKG_VERSION','1.6.5');
+define('PKG_VERSION','1.7.0');
 define('PKG_RELEASE','pl');
 define('PKG_AUTO_INSTALL', true);
 
@@ -20,7 +20,7 @@ define('MODX_CORE_PATH', MODX_BASE_PATH . 'core/');
 define('MODX_MANAGER_PATH', MODX_BASE_PATH . 'manager/');
 define('MODX_CONNECTORS_PATH', MODX_BASE_PATH . 'connectors/');
 define('MODX_ASSETS_PATH', MODX_BASE_PATH . 'assets/');
- 
+
 define('MODX_BASE_URL','/');
 define('MODX_CORE_URL', MODX_BASE_URL . 'core/');
 define('MODX_MANAGER_URL', MODX_BASE_URL . 'manager/');
