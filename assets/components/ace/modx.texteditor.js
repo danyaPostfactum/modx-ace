@@ -925,7 +925,7 @@ MODx.ux.Ace.CodeCompleter = function() {
             return {
                 value: meta == 'chunk' ? '$' + completion : completion,
                 caption: completion,
-                meta: meta,
+                meta: meta == 'function' ? completions[completion] : meta,
                 description: completions[completion],
                 score: 1000
             };
@@ -1032,17 +1032,29 @@ MODx.ux.Ace.CodeCompleter = function() {
 
     langTools.addCompleter({
         getCompletions: function(editor, session, pos, prefix, callback) {
-            var iterator = new TokenIterator(session, pos.row, pos.column);
+            var iterator = new TokenIterator(session, pos.row, pos.column),
+                parsedInfo = parseTag(iterator),
+                completionType = 'function',
+                classKey, objectName;
 
-            var parsedInfo = parseTag(iterator);
-            if (!parsedInfo)
-                return callback(null, {});
-
-            var completionType = parsedInfo.completionType;
-            var classKey = parsedInfo.classKey;
-            var objectName = parsedInfo.objectName;
+            if (parsedInfo) {
+                completionType = parsedInfo.completionType;
+                classKey = parsedInfo.classKey;
+                objectName = parsedInfo.objectName;
+            }
 
             switch (completionType) {
+                case 'function' :
+                    gatherCompletions([
+                        {
+                            cacheKey: 'function',
+                            requestParams: {action: 'getFunctions'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'function');
+                            }
+                        }
+                    ], callback);
+                    break;
                 case 'propertyset':
                     break;
                 case 'lexiconentry':

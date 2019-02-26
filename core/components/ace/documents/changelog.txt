@@ -1,5 +1,9 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.8.0
+====================================
+- Added: autocompletion for php functions.
+
 Ace 1.7.0
 ====================================
 - Added: new system setting "ace.grow".
