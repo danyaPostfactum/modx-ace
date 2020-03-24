@@ -386,7 +386,19 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     },
 
     setMimeType : function (mimeType){
-        this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        if(mimeType.match(/^@FILE:/)){
+            var config = ace.require('ace/config');
+            var modelist = ace.require("ace/ext/modelist");
+            var filePath = mimeType.replace(/^@FILE:/,'');
+            config.loadModule(["ext", 'ace/ext/modelist'], function(module) {
+                var mode = module.getModeForPath(filePath).mode;
+                mode = mode?mode.replace('ace/mode/',''):'text';
+                this.setMode( mode );
+            }.bind(this));
+        }
+        else{
+            this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        }
     },
 
     showGotoLineWindow : function(){

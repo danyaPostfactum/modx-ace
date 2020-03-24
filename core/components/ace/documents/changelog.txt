@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.9.0
+====================================
+- Added: autodetecting file mode by modelist.js [#7]
+- Added: new modes from ace-builds for version 1.2.0
+
 Ace 1.8.0
 ====================================
 - Added: autocompletion for php functions.

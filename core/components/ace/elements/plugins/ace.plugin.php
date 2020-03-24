@@ -98,7 +98,7 @@ switch ($modx->event->name) {
         $extension = pathinfo($scriptProperties['file'], PATHINFO_EXTENSION);
         $mimeType = isset($extensionMap[$extension])
             ? $extensionMap[$extension]
-            : 'text/plain';
+            : ('@FILE:'.pathinfo($scriptProperties['file'], PATHINFO_BASENAME));
         $modxTags = $extension == 'tpl';
         break;
     case 'OnDocFormPrerender':
