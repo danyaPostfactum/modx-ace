@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.9.1
+====================================
+- Fixed: Changed fonts
+- Updated: emmet.js with the support flex css styles and many other combinations
+
 Ace 1.9.0
 ====================================
 - Added: autodetecting file mode by modelist.js [#7]
