@@ -36,7 +36,10 @@ class Ace {
     public function initialize() {
         if (!$this->assetsLoaded) {
             $this->modx->controller->addLexiconTopic('ace:default');
-            $this->modx->controller->addJavascript($this->config['assetsUrl'].'ace/ace.js');
+            $this->modx->controller->addJavascript($this->config['assetsUrl'].'ace/ace.min.js');
+            $this->modx->controller->addJavascript($this->config['assetsUrl'].'ace/ext-language_tools.js');
+            $this->modx->controller->addJavascript($this->config['assetsUrl'].'ace/ext-keybinding_menu.js');
+            $this->modx->controller->addJavascript($this->config['assetsUrl'].'ace/ext-emmet.js');
             $this->modx->controller->addJavascript($this->config['assetsUrl'].'modx.texteditor.js');
         }
         $this->assetsLoaded = true;

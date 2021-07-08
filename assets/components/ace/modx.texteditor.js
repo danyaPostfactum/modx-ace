@@ -46,7 +46,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             this.defaultAutoCreate = {
                 tag: "div",
                 cls: "x-form-textarea",
-                style:"width:100px;height:60px"
+                style:"width:100%;height:60px"
             };
         }
         Ext.ux.Ace.superclass.onRender.call(this, ct, position);
@@ -58,6 +58,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         }
 
         this.editor = ace.edit(this.el.dom);
+        this.editor.$blockScrolling = Infinity;
 
         this.el.appendChild(this.valueHolder);
         this.el.dom.removeAttribute('name');
@@ -123,23 +124,53 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     autoSize: function(){
-        if(!this.grow){
-            return;
-        }
-        var linesCount = this.editor.getSession().getDocument().getLength();
+        var linesCount = this.editor.getSession().getScreenLength();
         var lineHeight = this.editor.renderer.lineHeight;
         var scrollBar =  this.editor.renderer.scrollBar.getWidth();
         var bordersWidth = this.el.getBorderWidth('tb');
+        var bottomOffset = lineHeight*5+scrollBar;
 
-        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + scrollBar + bordersWidth, this.growMin));
-        if(h != this.lastHeight){
-            this.lastHeight = h;
-            this.el.setHeight(h);
+        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bordersWidth + bottomOffset, this.growMin));
+        var heightChanged = h!=this.lastHeight;
+        if(this.grow && heightChanged){
+            this.setHeight(h);
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
+        
+        if(!this.editor.searchBox || heightChanged){
+            if(this.editor.searchBox)this.detectSearchBoxPosition(h);
+            else{
+                var that = this;
+                ace.config.loadModule("ace/ext/searchbox",function(m){
+                    m.Search(that.editor);
+                    that.editor.searchBox.hide();
+                    that.detectSearchBoxPosition(h);
+                });
+            }
+        }
+        
+        if(heightChanged)this.lastHeight = h;
     },
-
+    
+    detectSearchBoxPosition : function(editorHeight){
+        var triggerOffset = 150;
+        var defaultStyles={
+            position:null
+            ,bottom:null
+            ,top:null
+            ,borderRadius:null
+        };
+        var fixedStyles={
+            position:'fixed'
+            ,bottom:'0'
+            ,top:'initial'
+            ,borderRadius:'5px 0px 0px 0'
+        };
+        if(!this.isFullscreen&&editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
+        else Ext.apply(this.editor.searchBox.element.style,defaultStyles);
+    },
+    
     setSize : function(width, height){
         Ext.ux.Ace.superclass.setSize.apply(this, arguments);
         this.editor.resize(true);
@@ -235,9 +266,15 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var config = ace.require("ace/config");
         var acePath = MODx.config['assets_url'] + 'components/ace/ace';
+        config.set('basePath', acePath);
         config.set('modePath', acePath);
         config.set('themePath', acePath);
         config.set('workerPath', acePath);
+        if(MODx.config['ace.grow']!==undefined&&MODx.config['ace.grow']!==''){
+            this.grow = true;
+            this.growMax = parseInt(MODx.config['ace.grow'])||Infinity;
+            this.growMin = this.height;
+        }
         this.windows = [];
     },
 
@@ -296,6 +333,9 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             onChangeMode({}, this.editor);
 
             var Emmet = ace.require("ace/ext/emmet");
+            Emmet.isSupportedMode = function(modeId) {
+                return modeId && /css|less|scss|sass|stylus|html|php|twig|ejs|handlebars|smarty/.test(modeId);
+            };
             var net = ace.require('ace/lib/net');
             net.loadScript(MODx.config['assets_url'] + 'components/ace/emmet/emmet.js', function() {
                 Emmet.setCore(window.emmet);
@@ -346,7 +386,19 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     },
 
     setMimeType : function (mimeType){
-        this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        if(mimeType.match(/^@FILE:/)){
+            var config = ace.require('ace/config');
+            var modelist = ace.require("ace/ext/modelist");
+            var filePath = mimeType.replace(/^@FILE:/,'');
+            config.loadModule(["ext", 'ace/ext/modelist'], function(module) {
+                var mode = module.getModeForPath(filePath).mode;
+                mode = mode?mode.replace('ace/mode/',''):'text';
+                this.setMode( mode );
+            }.bind(this));
+        }
+        else{
+            this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        }
     },
 
     showGotoLineWindow : function(){
@@ -704,6 +756,9 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 
         this.HighlightRules = ModxMixedHighlightRules;
 
+        if (typeof this.$behaviour == 'undefined') {
+            var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
+        }
         this.$behaviour = Object.create(this.$behaviour || new Behaviour());
 
         this.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
@@ -818,21 +873,24 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 };
 
 MODx.ux.Ace.mimeTypes = {
-     'text/x-php'            : 'php'
-    ,'application/x-php'     : 'php'
-    ,'text/x-sql'            : 'sql'
-    ,'text/x-scss'           : 'scss'
-    ,'text/x-less'           : 'less'
-    ,'text/xml'              : 'xml'
-    ,'application/xml'       : 'xml'
-    ,'image/svg+xml'         : 'svg'
-    ,'text/html'             : 'html'
-    ,'application/xhtml+xml' : 'html'
-    ,'text/javascript'       : 'javascript'
-    ,'application/javascript': 'javascript'
-    ,'application/json'      : 'json'
-    ,'text/css'              : 'css'
-    ,'text/plain'            : 'text'
+    'text/x-smarty'         : 'smarty',
+    'text/html'             : 'html',
+    'application/xhtml+xml' : 'html',
+    'text/css'              : 'css',
+    'text/x-scss'           : 'scss',
+    'text/x-less'           : 'less',
+    'image/svg+xml'         : 'svg',
+    'application/xml'       : 'xml',
+    'text/xml'              : 'xml',
+    'text/javascript'       : 'javascript',
+    'application/javascript': 'javascript',
+    'application/json'      : 'json',
+    'text/x-php'            : 'php',
+    'application/x-php'     : 'php',
+    'text/x-sql'            : 'sql',
+    'text/x-markdown'       : 'markdown',
+    'text/plain'            : 'text',
+    'text/x-twig'           : 'twig'
 };
 
 MODx.ux.Ace.initialized = false;
@@ -879,7 +937,7 @@ MODx.ux.Ace.CodeCompleter = function() {
             return {
                 value: meta == 'chunk' ? '$' + completion : completion,
                 caption: completion,
-                meta: meta,
+                meta: meta == 'function' ? completions[completion] : meta,
                 description: completions[completion],
                 score: 1000
             };
@@ -986,17 +1044,29 @@ MODx.ux.Ace.CodeCompleter = function() {
 
     langTools.addCompleter({
         getCompletions: function(editor, session, pos, prefix, callback) {
-            var iterator = new TokenIterator(session, pos.row, pos.column);
+            var iterator = new TokenIterator(session, pos.row, pos.column),
+                parsedInfo = parseTag(iterator),
+                completionType = 'function',
+                classKey, objectName;
 
-            var parsedInfo = parseTag(iterator);
-            if (!parsedInfo)
-                return callback(null);
-
-            var completionType = parsedInfo.completionType;
-            var classKey = parsedInfo.classKey;
-            var objectName = parsedInfo.objectName;
+            if (parsedInfo) {
+                completionType = parsedInfo.completionType;
+                classKey = parsedInfo.classKey;
+                objectName = parsedInfo.objectName;
+            }
 
             switch (completionType) {
+                case 'function' :
+                    gatherCompletions([
+                        {
+                            cacheKey: 'function',
+                            requestParams: {action: 'getFunctions'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'function');
+                            }
+                        }
+                    ], callback);
+                    break;
                 case 'propertyset':
                     break;
                 case 'lexiconentry':
