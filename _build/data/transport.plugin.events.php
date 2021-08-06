@@ -64,4 +64,11 @@ $events['OnManagerPageBeforeRender']->fromArray(array(
     'propertyset' => 0
 ),'',true,true);
 
+$events['OnTVInputRenderList'] = $modx->newObject('modPluginEvent');
+$events['OnTVInputRenderList']->fromArray(array(
+    'event' => 'OnTVInputRenderList',
+    'priority' => 0,
+    'propertyset' => 0
+),'',true,true);
+
 return $events;
