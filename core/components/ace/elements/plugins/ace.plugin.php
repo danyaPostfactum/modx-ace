@@ -22,7 +22,8 @@ if ($modx->getOption('which_element_editor', null, 'Ace') !== 'Ace') {
     return;
 }
 
-$ace = $modx->getService('ace', 'Ace', $modx->getOption('ace.core_path', null, $modx->getOption('core_path').'components/ace/').'model/ace/');
+$corePath = $modx->getOption('ace.core_path', null, $modx->getOption('core_path').'components/ace/');
+$ace = $modx->getService('ace', 'Ace', $corePath.'model/ace/');
 $ace->initialize();
 
 $extensionMap = array(
@@ -118,6 +119,9 @@ switch ($modx->event->name) {
             }
         }
         $modxTags = true;
+        break;
+    case 'OnTVInputRenderList':
+        $modx->event->output($corePath . 'elements/tv/input/');
         break;
     default:
         return;
