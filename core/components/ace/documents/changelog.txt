@@ -1,5 +1,10 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.9.2
+====================================
+- Updated: Corrected search form [#8]
+- Added: TV input Ace field [#9]
+
 Ace 1.9.1
 ====================================
 - Fixed: Changed fonts
