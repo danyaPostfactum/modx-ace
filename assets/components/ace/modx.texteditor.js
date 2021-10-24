@@ -566,7 +566,13 @@ MODx.ux.Ace.replaceTextArea = function(id, config) {
 
     editor.render(textArea.parentNode);
     editor.editor.on('change', function(e){ MODx.fireResourceFormChange() });
-    new IntersectionObserver(() => editor.editor.resize(true)).observe(textArea.parentNode);
+    new IntersectionObserver(function(){    	
+    	editor.editor.resize(true);
+	var tabs = Ext.get('modx-tv-tabs');
+	if(tabs !== null){
+    		tabs.dom.scrollTop=0;
+	}
+    }).observe(textArea.parentNode);
     
     return editor;
 };
