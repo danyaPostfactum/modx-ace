@@ -129,7 +129,7 @@ switch ($modx->event->name) {
 
 $modxTags = (int) $modxTags;
 $script = '';
-if ($field) {
+if (!empty($field)) {
     $script .= "MODx.ux.Ace.replaceComponent('$field', '$mimeType', $modxTags);";
 }
 
