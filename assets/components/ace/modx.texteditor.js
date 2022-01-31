@@ -540,6 +540,43 @@ MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
     });
 };
 
+MODx.ux.Ace.replaceTextArea = function(id, config) {
+	config = config || {};
+    
+	var textAreaElement=Ext.get(id);
+	if(textAreaElement === null){
+		return undefined;
+	}
+	var textArea=textAreaElement.dom;
+	
+	Ext.applyIf(config,{
+        xtype: 'modx-texteditor',
+        width: 'auto',
+        height: parseInt(textArea.style.height) || 200,
+        name: textArea.name,
+        value: textArea.value,
+        mimeType: 'text/html',
+        modxTags: true
+    });    
+
+    var editor = MODx.load(config);
+
+    textArea.name = '';
+    textArea.style.display = 'none';
+
+    editor.render(textArea.parentNode);
+    editor.editor.on('change', function(e){ MODx.fireResourceFormChange() });
+    new IntersectionObserver(function(){    	
+    	editor.editor.resize(true);
+	var tabs = Ext.get('modx-tv-tabs');
+	if(tabs !== null){
+    		tabs.dom.scrollTop=0;
+	}
+    }).observe(textArea.parentNode);
+    
+    return editor;
+};
+
 MODx.ux.Ace.createModxMixedMode = function(Mode) {
     function ModxMixedMode() {
         Mode.call(this);
