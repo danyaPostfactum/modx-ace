@@ -1,5 +1,11 @@
 Changelog for Ace integration into MODx Revolution.
 
+Ace 1.9.3 [15.05.2022]
+====================================
+- Updated: Move settings into an own file [#12]
+- Fixed: Ace TV input [#11]
+- Fixed: Prevent PHP warning: Undefined variable $field [#10]
+
 Ace 1.9.2
 ====================================
 - Updated: Corrected search form [#8]

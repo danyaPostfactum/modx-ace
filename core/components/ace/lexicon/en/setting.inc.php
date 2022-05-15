@@ -1,3 +1,11 @@
+<?php
+/**
+ * Settings Language file for Ace
+ *
+ * @package ace
+ * @subpackage lexicon
+ */
+
 $_lang['area_general'] = 'General settings';
 
 $_lang['setting_ace.theme'] = 'Editor theme';
