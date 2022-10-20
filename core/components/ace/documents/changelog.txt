@@ -1,4 +1,4 @@
-Changelog for Ace integration into MODx Revolution.
+Changelog for Ace (https://github.com/modx-pro/modx-ace) integration into MODX Revolution.
 
 Ace 1.9.3 [15.05.2022]
 ====================================
