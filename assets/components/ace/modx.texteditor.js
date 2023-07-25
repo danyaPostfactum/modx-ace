@@ -230,7 +230,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     focus: function (){
-        this.editor.focus();
+        (this.editor || this.valueHolder).focus();
     },
 
     blur: function (){
