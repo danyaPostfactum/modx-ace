@@ -137,7 +137,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
-        
+
         if(!this.editor.searchBox || heightChanged){
             if(this.editor.searchBox)this.detectSearchBoxPosition(h);
             else{
@@ -149,10 +149,10 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
                 });
             }
         }
-        
+
         if(heightChanged)this.lastHeight = h;
     },
-    
+
     detectSearchBoxPosition : function(editorHeight){
         var triggerOffset = 150;
         var defaultStyles={
@@ -170,7 +170,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         if(!this.isFullscreen&&editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
         else Ext.apply(this.editor.searchBox.element.style,defaultStyles);
     },
-    
+
     setSize : function(width, height){
         Ext.ux.Ace.superclass.setSize.apply(this, arguments);
         this.editor.resize(true);
@@ -306,7 +306,7 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         if (!MODx.ux.Ace.initialized) {
             var style = "\
                 .ace_maximized {position: fixed; border: none; top: 0; left: 0; right: 0; bottom: 0; width: auto !important; height: auto !important;z-index: 100}\
-                .ace_maximizer {position: absolute; width: 16px; height: 16px; top: 3px; right: 3px; opacity: 0.7; z-index: 10; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEVmrBxkqxpjqhlkqxprryFnrB1kqxtkqxp6uzJiqRhZow9kqxpmrBxlrBtnrBxjqhlmrBxjqhptsSNkqhplqxt4tyxkqhlmrB1mrBx5uzJmrBxorR9orR5nrB1kqhlorR14uS5mrRxhqBhmrR1aoxBlqxt3titusiRlqxpiqRd4ty1rrh9hqBdjqxp3tSpaow9mrR15ujBorh5lrBxapRFmrBxkqhpjqhp5uzBhqRdnrB1rsCJlrBt6vDNorh93tipmqxxhqRhapBFbpRJnrR1mrB14uC1usiVnrB1apRFhqReq1VmLxUGv5Gyt3GOs22Cm0FKn2FyUzUyRykev4WmUz1CUy0mw5G6RzEmr11xusSOSy0iOxkKPx0Or2V6CwTuo3GGUz0+Sy0mu5W6Ry0mq1lptsCORy0iNx0OAvDOo2V5/vDOCwDmPxkOOy0mj0lWl1lqu4Gap1Viv4mms2l+s3WSPx0SKwDtusiWCwTqQxUGSyUaRykiAvDSp2l+Qx0QdWpRIAAAAS3RSTlMAAAAa4gAAlfAZMRLhuQCV1ZXwGgDwlQCy8MzY2swS2PDqEdUisvDwABn64hEA8CLh+tq5MeoAAPAZ4eKy+tr6uREiMdXq8PDqIhHgP7bQAAAA4ElEQVR42mOw5uBw52cAA351CwUWBttk30p9iIBKTmGcFgNHeEKwlBIfAwOrjmxNQaQoQ0V8TVa9PDMDg7B0RF1MdhSDGJdLfWqVqS6Ta5BfvYAzO1Arp0xVOS8bo3FGtAwnxDBuHhsRBgYNVR5uBihgZAOTTDA+AxMjiDSDCYhzW0kAtTBKGMiJgwUs7cJ8eBkZHfISjTSBXDEu5RT/akVzJo/Q4mgBE3aGisr0OqjDkupyM9MYJEMCY6UcQU73ki3LL1JjMCwtqfWEmO5U6x1gz8Ci4CYkCBEQFBLV0wYAXu4m8P20SwoAAAAASUVORK5CYII=)}\
+                .ace_maximizer {position: absolute; width: 16px; height: 16px; top: 3px; right: 3px; opacity: 0.7; z-index: 10; cursor: pointer; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEVmrBxkqxpjqhlkqxprryFnrB1kqxtkqxp6uzJiqRhZow9kqxpmrBxlrBtnrBxjqhlmrBxjqhptsSNkqhplqxt4tyxkqhlmrB1mrBx5uzJmrBxorR9orR5nrB1kqhlorR14uS5mrRxhqBhmrR1aoxBlqxt3titusiRlqxpiqRd4ty1rrh9hqBdjqxp3tSpaow9mrR15ujBorh5lrBxapRFmrBxkqhpjqhp5uzBhqRdnrB1rsCJlrBt6vDNorh93tipmqxxhqRhapBFbpRJnrR1mrB14uC1usiVnrB1apRFhqReq1VmLxUGv5Gyt3GOs22Cm0FKn2FyUzUyRykev4WmUz1CUy0mw5G6RzEmr11xusSOSy0iOxkKPx0Or2V6CwTuo3GGUz0+Sy0mu5W6Ry0mq1lptsCORy0iNx0OAvDOo2V5/vDOCwDmPxkOOy0mj0lWl1lqu4Gap1Viv4mms2l+s3WSPx0SKwDtusiWCwTqQxUGSyUaRykiAvDSp2l+Qx0QdWpRIAAAAS3RSTlMAAAAa4gAAlfAZMRLhuQCV1ZXwGgDwlQCy8MzY2swS2PDqEdUisvDwABn64hEA8CLh+tq5MeoAAPAZ4eKy+tr6uREiMdXq8PDqIhHgP7bQAAAA4ElEQVR42mOw5uBw52cAA351CwUWBttk30p9iIBKTmGcFgNHeEKwlBIfAwOrjmxNQaQoQ0V8TVa9PDMDg7B0RF1MdhSDGJdLfWqVqS6Ta5BfvYAzO1Arp0xVOS8bo3FGtAwnxDBuHhsRBgYNVR5uBihgZAOTTDA+AxMjiDSDCYhzW0kAtTBKGMiJgwUs7cJ8eBkZHfISjTSBXDEu5RT/akVzJo/Q4mgBE3aGisr0OqjDkupyM9MYJEMCY6UcQU73ki3LL1JjMCwtqfWEmO5U6x1gz8Ci4CYkCBEQFBLV0wYAXu4m8P20SwoAAAAASUVORK5CYII=)}\
                 .ace_maximizer:hover {opacity: 1}\
             ";
             new MODx.ux.Ace.CodeCompleter();
@@ -541,15 +541,15 @@ MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
 };
 
 MODx.ux.Ace.replaceTextArea = function(id, config) {
-	config = config || {};
-    
-	var textAreaElement=Ext.get(id);
-	if(textAreaElement === null){
-		return undefined;
-	}
-	var textArea=textAreaElement.dom;
-	
-	Ext.applyIf(config,{
+    config = config || {};
+
+    var textAreaElement=Ext.get(id);
+    if(textAreaElement === null){
+        return undefined;
+    }
+    var textArea=textAreaElement.dom;
+
+    Ext.applyIf(config,{
         xtype: 'modx-texteditor',
         width: 'auto',
         height: parseInt(textArea.style.height) || 200,
@@ -557,7 +557,7 @@ MODx.ux.Ace.replaceTextArea = function(id, config) {
         value: textArea.value,
         mimeType: 'text/html',
         modxTags: true
-    });    
+    });
 
     var editor = MODx.load(config);
 
@@ -566,14 +566,14 @@ MODx.ux.Ace.replaceTextArea = function(id, config) {
 
     editor.render(textArea.parentNode);
     editor.editor.on('change', function(e){ MODx.fireResourceFormChange() });
-    new IntersectionObserver(function(){    	
-    	editor.editor.resize(true);
-	var tabs = Ext.get('modx-tv-tabs');
-	if(tabs !== null){
-    		tabs.dom.scrollTop=0;
-	}
+    new IntersectionObserver(function(){
+        editor.editor.resize(true);
+        var tabs = Ext.get('modx-tv-tabs');
+        if(tabs !== null){
+            tabs.dom.scrollTop=0;
+        }
     }).observe(textArea.parentNode);
-    
+
     return editor;
 };
 
