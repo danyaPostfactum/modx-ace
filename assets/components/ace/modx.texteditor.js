@@ -371,6 +371,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             exec: this.fullScreen.bind(this),
             readOnly: true
         });
+
+        this.editor.commands.addCommand({
+            name: "updatewrapmode",
+            bindKey: {win: "Alt-Z", mac: "Alt-Z"},
+            exec: this.updatewrapmode.bind(this),
+            readOnly: true
+        });
+	
     },
 
     fullScreen : function() {
@@ -383,6 +391,15 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         }
         this.isFullscreen = !this.isFullscreen;
         this.onResize();
+    },
+
+    updatewrapmode : function() {
+        if (this.useWrapMode){
+            this.setUseWrapMode(false);
+        } else {
+            this.setUseWrapMode(true);
+        }
+        this.useWrapMode = !this.useWrapMode;
     },
 
     setMimeType : function (mimeType){
