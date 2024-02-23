@@ -1,5 +1,11 @@
 Changelog for Ace (https://github.com/modx-pro/modx-ace) integration into MODX Revolution.
 
+Ace 1.9.4 [23.02.2024]
+====================================
+- Feat: Added links on GitHub [#13]
+- Fixed: Fixed focus() triggering for undefined [#14]
+- Feat: Added alt+z keyboard shortcut to toggle word wrap [#15]
+
 Ace 1.9.3 [15.05.2022]
 ====================================
 - Updated: Move settings into an own file [#12]
