@@ -1,4 +1,71 @@
-Changelog for Ace integration into MODx Revolution.
+Changelog for Ace (https://github.com/modx-pro/modx-ace) integration into MODX Revolution.
+
+Ace 1.9.4 [23.02.2024]
+====================================
+- Feat: Added links on GitHub [#13]
+- Fixed: Fixed focus() triggering for undefined [#14]
+- Feat: Added alt+z keyboard shortcut to toggle word wrap [#15]
+
+Ace 1.9.3 [15.05.2022]
+====================================
+- Updated: Move settings into an own file [#12]
+- Fixed: Ace TV input [#11]
+- Fixed: Prevent PHP warning: Undefined variable $field [#10]
+
+Ace 1.9.2
+====================================
+- Updated: Corrected search form [#8]
+- Added: TV input Ace field [#9]
+
+Ace 1.9.1
+====================================
+- Fixed: Changed fonts
+- Updated: emmet.js with the support flex css styles and many other combinations
+
+Ace 1.9.0
+====================================
+- Added: autodetecting file mode by modelist.js [#7]
+- Added: new modes from ace-builds for version 1.2.0
+
+Ace 1.8.0
+====================================
+- Added: autocompletion for php functions.
+
+Ace 1.7.0
+====================================
+- Added: new system setting "ace.grow".
+- Added: new system setting "ace.html_elements_mime".
+
+Ace 1.6.5
+====================================
+- Added: "Twig" syntax for support of Twig in chunks.
+- Changed: Plugin is not static anymore.
+
+Ace 1.6.4
+====================================
+- Fixed: Support of emmet in smarty mode. Again.
+
+Ace 1.6.3
+====================================
+- Fixed: Support of emmet in smarty mode.
+
+Ace 1.6.2
+====================================
+- Fixed: Editor mode handling.
+- Added: "Markdown" syntax for mime type "text/x-markdown".
+
+Ace 1.6.1
+====================================
+- Fixed : Work with enabled system setting "compress_js".
+
+Ace 1.6.0
+====================================
+- Added: "Smarty" syntax for support of Fenom in chunks.
+- Updated: Ace to version 1.2.0.
+
+Ace 1.5.1
+====================================
+- Fixed: Bug with narrowing of the textarea.
 
 Ace 1.5.0
 ====================================

@@ -82,5 +82,22 @@ $settings['height']->fromArray(array(
         'area' => 'general'
     ),'',true,true);
 
+$settings['grow']= $modx->newObject('modSystemSetting');
+$settings['grow']->fromArray(array(
+        'key' => 'ace.grow',
+        'xtype' => 'textfield',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['html_elements_mime']= $modx->newObject('modSystemSetting');
+$settings['html_elements_mime']->fromArray(array(
+        'key' => 'ace.html_elements_mime',
+        'xtype' => 'textfield',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
 
 return $settings;
