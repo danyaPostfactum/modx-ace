@@ -8,74 +8,93 @@
  */
 
 /**
- * Resolver to set which_editor to Ace
- * 
+ * Resolver: set default editor, add missing event, cleanup on upgrade.
+ * Outputs a readable install log.
+ *
  * @package ace
  * @subpackage build
  */
-$success= true;
-if ($pluginid= $object->get('id')) {
+
+$success = true;
+$log = function ($message) use ($object) {
+    $object->xpdo->log(xPDO::LOG_LEVEL_INFO, $message);
+};
+
+if ($pluginid = $object->get('id')) {
     switch ($options[xPDOTransport::PACKAGE_ACTION]) {
         case xPDOTransport::ACTION_INSTALL:
         case xPDOTransport::ACTION_UPGRADE:
-            $object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to set which_element_editor setting to Ace.');
-            // set Ace as default element editor
-            $setting = $object->xpdo->getObject('modSystemSetting',array('key' => 'which_element_editor'));
+            $log('[Ace] Running installation resolver...');
+
+            $setting = $object->xpdo->getObject('modSystemSetting', ['key' => 'which_element_editor']);
             if ($setting) {
-                $setting->set('value','Ace');
+                $setting->set('value', 'Ace');
                 $setting->save();
+                $log('✓ Set default element editor to Ace (which_element_editor)');
             }
             unset($setting);
-            // add missing event in MODx < 2.2.3
-			$event = $object->xpdo->getObject('modEvent', array('name' => 'OnFileEditFormPrerender'));
-			if (!$event) {
-				$object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to add missing OnFileEditFormPrerender event to MODx.');
-				$event = $object->xpdo->newObject('modEvent');
-				$event->fromArray(array (
-				  'name' => 'OnFileEditFormPrerender',
-				  'service' => 1,
-				  'groupname' => 'System',
-				), '', true, true);
-				$event->save();
-			}
+
+            $event = $object->xpdo->getObject('modEvent', ['name' => 'OnFileEditFormPrerender']);
+            if (!$event) {
+                $newEvent = $object->xpdo->newObject('modEvent');
+                $newEvent->fromArray([
+                    'name' => 'OnFileEditFormPrerender',
+                    'service' => 1,
+                    'groupname' => 'System',
+                ], '', true, true);
+                $newEvent->save();
+                $log('✓ Added missing system event: OnFileEditFormPrerender');
+            }
+            $log('[Ace] Default editor and events configured.');
             break;
+
         case xPDOTransport::ACTION_UNINSTALL:
-            $success= true;
+            $success = true;
             break;
     }
-    switch ($options[xPDOTransport::PACKAGE_ACTION]) {
-        case xPDOTransport::ACTION_UPGRADE:
-            // remove obsolete plugin properties and files
-			$plugin = $object->xpdo->getObject('modPlugin', array('name' => 'Ace'));	
-            if ($plugin) {
-				$object->xpdo->log(xPDO::LOG_LEVEL_INFO,'Attempting to clear obsolete plugin properties.');
-                $plugin->setProperties(array());
-                $plugin->save();
-                
-                // Code from http://www.php.net/manual/en/function.rmdir.php#98622
-                function rrmdir($dir) {
-                   if (is_dir($dir)) {
-                     $objects = scandir($dir);
-                     foreach ($objects as $object) {
-                       if ($object != "." && $object != "..") {
-                         if (filetype($dir."/".$object) == "dir") rrmdir($dir."/".$object); else unlink($dir."/".$object);
-                       }
-                     }
-                     reset($objects);
-                     rmdir($dir);
-                   }
-                 }
 
-                $oldAssets = array(MODX_MANAGER_PATH. 'assets/components/ace/', MODX_MANAGER_PATH. 'components/ace/');
-                foreach ($oldAssets as $path) {
+    if ($options[xPDOTransport::PACKAGE_ACTION] === xPDOTransport::ACTION_UPGRADE) {
+        $plugin = $object->xpdo->getObject('modPlugin', ['name' => 'Ace']);
+        if ($plugin) {
+            $log('[Ace] Cleaning up obsolete data...');
+            $plugin->setProperties([]);
+            $plugin->save();
+            $log('✓ Cleared obsolete plugin properties');
+
+            $rrmdir = function ($dir) use (&$rrmdir) {
+                if (!is_dir($dir)) {
+                    return;
+                }
+                $items = scandir($dir);
+                foreach ($items as $item) {
+                    if ($item === '.' || $item === '..') {
+                        continue;
+                    }
+                    $path = $dir . '/' . $item;
                     if (is_dir($path)) {
-                        $object->xpdo->log(xPDO::LOG_LEVEL_INFO, "Attempting to remove old assets directory ($path).");
-                        @rrmdir($path);
-                        break;
+                        $rrmdir($path);
+                    } else {
+                        @unlink($path);
                     }
                 }
+                @rmdir($dir);
+            };
+
+            $oldAssets = [
+                MODX_MANAGER_PATH . 'assets/components/ace/',
+                MODX_MANAGER_PATH . 'components/ace/',
+            ];
+            foreach ($oldAssets as $path) {
+                if (is_dir($path)) {
+                    @$rrmdir($path);
+                    $log('✓ Removed old assets directory: ' . $path);
+                    break;
+                }
             }
-	}
+            $log('[Ace] Cleanup completed.');
+        }
+    }
 }
 
+$log('✅ [Ace] Resolver completed.');
 return $success;

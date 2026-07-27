@@ -23,11 +23,11 @@ class modCompletionsGetObjects extends modProcessor {
                 $this->modx->lexicon->load('setting');
                 foreach ($objects as $object) {
                     $array = $this->prepareSetting($object);
-                    $list[$object->get('key')] = $array['name_trans'] . '. ' . $array['description_trans'];
+                    $list[$object->get('key')] = ($array['name_trans'] ?? '') . '. ' . ($array['description_trans'] ?? '');
                 }
             } else {
                 foreach ($objects as $object) {
-                    $list[$object->get('name')] = $object->get('description');
+                    $list[$object->get('name')] = $object->get('description') ?? '';
                 }
             }
         }

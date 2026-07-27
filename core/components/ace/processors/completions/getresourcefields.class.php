@@ -18,7 +18,7 @@ class modCompletionsGetResourcefields extends modProcessor {
 
     public function process() {
         $data = file_get_contents($this->path);
-        return $data;
+        return $data !== false ? $data : '{}';
     }
 
 }

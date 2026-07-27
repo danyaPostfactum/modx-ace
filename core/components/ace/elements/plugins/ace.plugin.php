@@ -9,6 +9,9 @@
  * @author Danil Kostin <danya.postfactum(at)gmail.com>
  *
  * @package ace
+ *
+ * @var array $scriptProperties
+ * @var Ace $ace
  */
 if ($modx->event->name == 'OnRichTextEditorRegister') {
     $modx->event->output('Ace');
@@ -19,12 +22,28 @@ if ($modx->getOption('which_element_editor', null, 'Ace') !== 'Ace') {
     return;
 }
 
-$ace = $modx->getService('ace', 'Ace', $modx->getOption('ace.core_path', null, $modx->getOption('core_path').'components/ace/').'model/ace/');
-
+$corePath = $modx->getOption('ace.core_path', null, $modx->getOption('core_path') . 'components/ace/');
+$ace = $modx->getService('ace', 'Ace', $corePath . 'model/ace/');
 $ace->initialize();
 
+if (!function_exists('aceGetEffectiveUseEditor')) {
+    function aceGetEffectiveUseEditor($modx) {
+        if ($modx->controller && !empty($modx->controller->context)) {
+            return (bool) $modx->controller->context->getOption('use_editor', $modx->getOption('use_editor'));
+        }
+        return (bool) $modx->getOption('use_editor');
+    }
+}
+
+if (!function_exists('aceIsNonAceRichTextEditor')) {
+    function aceIsNonAceRichTextEditor($modx) {
+        $whichEditor = trim((string) $modx->getOption('which_editor', ''));
+        return $whichEditor !== '' && strcasecmp($whichEditor, 'Ace') !== 0;
+    }
+}
+
 $extensionMap = array(
-    'tpl'   => 'text/html',
+    'tpl'   => 'text/x-smarty',
     'htm'   => 'text/html',
     'html'  => 'text/html',
     'css'   => 'text/css',
@@ -37,11 +56,30 @@ $extensionMap = array(
     'json'  => 'application/json',
     'php'   => 'application/x-php',
     'sql'   => 'text/x-sql',
+    'md'    => 'text/x-markdown',
     'txt'   => 'text/plain',
+    'twig'  => 'text/x-twig'
 );
+
+// Define default mime for html elements(templates, chunks and html resources)
+$html_elements_mime = $modx->getOption('ace.html_elements_mime', null, false);
+if (!$html_elements_mime) {
+    // this may deprecated in future because components may set ace.html_elements_mime option now
+    switch (true) {
+        case $modx->getOption('twiggy_class'):
+            $html_elements_mime = 'text/x-twig';
+            break;
+        case $modx->getOption('pdotools_fenom_parser'):
+            $html_elements_mime = 'text/x-smarty';
+            break;
+        default:
+            $html_elements_mime = 'text/html';
+    }
+}
 
 // Defines wether we should highlight modx tags
 $modxTags = false;
+$useEditor = null;
 switch ($modx->event->name) {
     case 'OnSnipFormPrerender':
         $field = 'modx-snippet-snippet';
@@ -49,16 +87,19 @@ switch ($modx->event->name) {
         break;
     case 'OnTempFormPrerender':
         $field = 'modx-template-content';
-        $mimeType = 'text/html';
         $modxTags = true;
+        $mimeType = $html_elements_mime;
         break;
     case 'OnChunkFormPrerender':
         $field = 'modx-chunk-snippet';
         if ($modx->controller->chunk && $modx->controller->chunk->isStatic()) {
-            $extension = pathinfo($modx->controller->chunk->getSourceFile(), PATHINFO_EXTENSION);
+            $extension = pathinfo($modx->controller->chunk->name, PATHINFO_EXTENSION);
+            if (!$extension || !isset($extensionMap[$extension])) {
+                $extension = pathinfo($modx->controller->chunk->getSourceFile(), PATHINFO_EXTENSION);
+            }
             $mimeType = isset($extensionMap[$extension]) ? $extensionMap[$extension] : 'text/plain';
         } else {
-            $mimeType = 'text/html';
+            $mimeType = $html_elements_mime;
         }
         $modxTags = true;
         break;
@@ -73,36 +114,50 @@ switch ($modx->event->name) {
     case 'OnFileEditFormPrerender':
         $field = 'modx-file-content';
         $extension = pathinfo($scriptProperties['file'], PATHINFO_EXTENSION);
-        $mimeType = isset($extensionMap[$extension]) ? $extensionMap[$extension] : 'text/plain';
+        $mimeType = isset($extensionMap[$extension])
+            ? $extensionMap[$extension]
+            : ('@FILE:' . pathinfo($scriptProperties['file'], PATHINFO_BASENAME));
         $modxTags = $extension == 'tpl';
         break;
     case 'OnDocFormPrerender':
-        if (!$modx->controller->resourceArray) {
+        // Resource content: respect per-context use_editor (#35) and which_editor (#30).
+        // When another RTE is configured, do not replace #ta — MODX.loadRTE or plain textarea handles it.
+        if (!$modx->controller || empty($modx->controller->resourceArray)) {
             return;
         }
+        $useEditor = aceGetEffectiveUseEditor($modx);
         $field = 'ta';
         $mimeType = $modx->getObject('modContentType', $modx->controller->resourceArray['content_type'])->get('mime_type');
-        if ($modx->getOption('use_editor')){
+
+        if ($mimeType == 'text/html') {
+            $mimeType = $html_elements_mime;
+        }
+
+        if ($useEditor) {
             $richText = $modx->controller->resourceArray['richtext'];
             $classKey = $modx->controller->resourceArray['class_key'];
-            if ($richText || in_array($classKey, array('modStaticResource','modSymLink','modWebLink','modXMLRPCResource'))) {
+            if ($richText || in_array($classKey, array('modStaticResource', 'modSymLink', 'modWebLink', 'modXMLRPCResource'))) {
+                $field = false;
+            } elseif (aceIsNonAceRichTextEditor($modx)) {
                 $field = false;
             }
         }
-
         $modxTags = true;
+        break;
+    case 'OnTVInputRenderList':
+        $modx->event->output($corePath . 'elements/tv/input/');
         break;
     default:
         return;
 }
 
-$modxTags = json_encode($modxTags);
-$script = "";
-if ($field) {
+$modxTags = (int) $modxTags;
+$script = '';
+if (!empty($field)) {
     $script .= "MODx.ux.Ace.replaceComponent('$field', '$mimeType', $modxTags);";
 }
 
-if ($modx->event->name == 'OnDocFormPrerender' && !$modx->getOption('use_editor')) {
+if ($modx->event->name == 'OnDocFormPrerender' && $useEditor === false) {
     $script .= "MODx.ux.Ace.replaceTextAreas(Ext.query('.modx-richtext'));";
 }
 
