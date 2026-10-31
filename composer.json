@@ -1,0 +1,19 @@
+{
+    "name": "modx-pro/modx-ace",
+    "description": "Ace code editor for MODX Revolution",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ace\\Tests\\": "tests/php/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

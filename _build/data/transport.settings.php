@@ -82,5 +82,49 @@ $settings['height']->fromArray(array(
         'area' => 'general'
     ),'',true,true);
 
+$settings['grow']= $modx->newObject('modSystemSetting');
+$settings['grow']->fromArray(array(
+        'key' => 'ace.grow',
+        'xtype' => 'textfield',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['html_elements_mime']= $modx->newObject('modSystemSetting');
+$settings['html_elements_mime']->fromArray(array(
+        'key' => 'ace.html_elements_mime',
+        'xtype' => 'textfield',
+        'value' => '',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['auto_close_tags']= $modx->newObject('modSystemSetting');
+$settings['auto_close_tags']->fromArray(array(
+        'key' => 'ace.auto_close_tags',
+        'xtype' => 'combo-boolean',
+        'value' => '1',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['draft_restore']= $modx->newObject('modSystemSetting');
+$settings['draft_restore']->fromArray(array(
+        'key' => 'ace.draft_restore',
+        'xtype' => 'combo-boolean',
+        'value' => '0',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
+
+$settings['color_preview']= $modx->newObject('modSystemSetting');
+$settings['color_preview']->fromArray(array(
+        'key' => 'ace.color_preview',
+        'xtype' => 'combo-boolean',
+        'value' => '0',
+        'namespace' => 'ace',
+        'area' => 'general'
+    ),'',true,true);
 
 return $settings;

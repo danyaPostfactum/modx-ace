@@ -1,99 +1,313 @@
-Changelog for Ace integration into MODx Revolution.
+# Changelog
 
-Ace 1.5.0
-====================================
-- Changed: Assets are moved back to /assets/
-- Fixed: MODx tag completions (was completely broken)
-- Added: Editor height setting
+All notable changes to this project will be documented in this file.
 
-Ace 1.4.3
-====================================
-- Added: MODx tag completions (Ctrl+Space)
-- Fixed: Issue caused AjaxManager (MODx Manager speed booster plugin) tree drag'n'drop bug
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Ace 1.4.2
-====================================
-- Added: Undo coalescing
-- Changed: Mac fullscreen command is bound to Command+F12
-- Added: Drag delay (allow to start new selection inside current one) for Mac
-- Fixed: Use file extension of static chunks to detect code syntax
+## [1.9.12] - 2026-10-31
 
+### Fixed
+- Package upgrade now preserves `which_element_editor` when a custom editor is already selected. Ace is set as default only on fresh install or when the setting value is empty ([#56](https://github.com/modx-pro/modx-ace/issues/56)).
+- Setting description for `ace.theme` lists `kr_theme` instead of `kr` in both RU and EN lexicons, matching the actual theme module name ([#57](https://github.com/modx-pro/modx-ace/issues/57)).
 
-Ace 1.4.1
-====================================
-- Fixed: Tab handling
-- Fixed: Emmet shortcut listing by Ctr+Alt+H
-- Added: Expandable snippets support (see ace.snippets setting)
-- Added: Emmet wrap_with_abbreviation command (Alt+W)
+## [1.9.11] - 2026-10-25
 
-Ace 1.4.0
-====================================
-- Added: Emmet (aka Zen Coding) support
-- Added: Terminal dark theme
-- Added: Hotkey table (Ctrl+Alt+H)
-- Fixed: Resource overview fatal error
-- Changed: Assets are moved to /manager/assets/components/
+### Fixed
+- Undo (Ctrl+Z / Cmd+Z) still works after saving a chunk, template, or other Ace form. Save synced the editor with `session.setValue()` of the same text, and Ace resets its undo manager on that call ([#47](https://github.com/modx-pro/modx-ace/issues/47)).
+- Snippet and plugin editor keeps a leading `<?php` (and a trailing `?>`) after save. MODX `modScript::set()` stores the code without that wrapper and the save response was written back into Ace, so the tag disappeared immediately ([#48](https://github.com/modx-pro/modx-ace/issues/48)). The database still stores the code without the wrapper. After a reload the editor shows the stored source.
+- Fullscreen insets follow the manager nav and the Save/Close bar instead of fixed `60px` / `70px`, so a taller action bar on MODX 3 no longer covers the top of the editor or the collapse button ([#49](https://github.com/modx-pro/modx-ace/issues/49)).
 
-Ace 1.3.3
-====================================
-- Added: PHP live syntax check
-- Added: Chaos dark theme
-- Added: Setting show_invisibles
+## [1.9.10] - 2026-07-27
 
+### Added
+- Default MODX Tab snippets (`getr`, `pdoResources`, `chunk`, `[[*tv]]`, etc.) installed into `ace.snippets` on fresh install/upgrade when the setting is empty ([#36](https://github.com/modx-pro/modx-ace/issues/36)).
+- System setting `ace.draft_restore` to save editor drafts in browser localStorage and restore after accidental reload ([#33](https://github.com/modx-pro/modx-ace/issues/33)).
+- System setting `ace.color_preview` to tint CSS color literals (#hex, rgb/hsl) in CSS/HTML modes ([#34](https://github.com/modx-pro/modx-ace/issues/34)).
+- System setting `ace.auto_close_tags` to disable automatic closing of HTML tags, brackets, and MODX tag pairs ([#29](https://github.com/modx-pro/modx-ace/issues/29)).
+- Unit tests for plugin helpers and shared JS utils (`composer test`, `npm test`).
 
-Ace 1.3.2
-====================================
-- Fixed: The bug while installing the Ace
-- Fixed: Broken word_wrap setting
-- Added: Tab settings (tab size, soft tab)
-- Added: Now completele compatible with AjaxManager extra
+### Fixed
+- Ctrl+S / Cmd+S in fullscreen on chunk/template/element forms: save showed success but wrote stale content because the hidden field left the form when the editor moved to `document.body`. The named input now stays in the form; `getValue()` syncs from Ace before submit; `MODx.onSaveEditor` syncs the original Ext field ([#25](https://github.com/modx-pro/modx-ace/issues/25)).
+- Resource content form: Ace no longer replaces `#ta` when another RTE is configured (`which_editor` ≠ Ace). With `use_editor=Yes` and e.g. TinyMCE, non-richtext resources keep a plain textarea instead of Ace ([#30](https://github.com/modx-pro/modx-ace/issues/30)).
+- Resource content form: `use_editor` is read from the current context override when available, not only the global system setting ([#35](https://github.com/modx-pro/modx-ace/issues/35)).
+- `onDestroy` no longer throws when Ace was never initialized (destroy before `onRender` or partial Ext component) ([#32](https://github.com/modx-pro/modx-ace/issues/32)).
+- SCSS/CSS/static chunks: MODX tag mixed mode is enabled only for HTML-like mime types (`text/html`, Smarty, Twig), so `//` and `/* */` comments highlight correctly instead of HTML `<!-- -->` ([#31](https://github.com/modx-pro/modx-ace/issues/31)).
+- Resource overview cache tab (`resource/data`): Ace initializes after cache buffer is loaded, so `modx-rdata-buffer` is not empty ([#28](https://github.com/modx-pro/modx-ace/issues/28)).
+- Empty-field Ace init no longer waits up to 5s: async wait applies only to `modx-rdata-buffer` on the resource overview cache tab.
+- `which_editor` for resource forms also respects context overrides (aligned with `use_editor`).
+- Color preview is per-editor (no shared singleton), capped at 2000 lines, and cleaned up on destroy.
+- Draft restore: stable storage keys, non-empty draft banner only, clear on successful form save / `MODx.onSaveEditor`.
+- Guard `onResize` / `initEvents` / `autoSize` / `setSize` when Ace was never rendered.
+- Static Ace helpers (`DraftManager`, settings getters) attach after `Ext.extend` so they are not overwritten; `ace-color-preview.js` loads after `modx.texteditor.js`.
 
+## [1.9.9] - 2026-03-29
 
-Ace 1.3.1
-====================================
-- Changed: Plugin content now is stored in static file
+### Fixed
+- Fullscreen Ace over the whole manager (MODX 3): right-hand panels and other chrome no longer stay on top. The editor node is moved to `document.body` while maximized and uses a higher `z-index`, fixing stacking limits inside `#modx-content` that core PR [modxcms/revolution#16778](https://github.com/modxcms/revolution/pull/16778) does not address for extras ([#18](https://github.com/modx-pro/modx-ace/issues/18)).
+- Fullscreen `.ace_maximized` insets (`top: 60px`, `left: 70px`, `right/bottom: 3px`) so the manager top bar, left tree, and resource/form header stay visible on MODX 3.1+ (see [community report](https://community.modx.com/t/3-1-0-issue-with-ace-editor-fullscreen/8267) and [workaround note](https://community.modx.com/t/3-1-0-issue-with-ace-editor-fullscreen/8267/5)).
+- In-editor PHP syntax check: false `Syntax error, unexpected '?'` (and similar) for valid PHP 7+ code such as null coalescing `??`. Bundled `worker-php.js` updated to [ace-builds](https://www.npmjs.com/package/ace-builds) **1.37.5** (`T_COALESCE` and related tokens).
 
+## [1.9.8] - 2026-03-05
 
-Ace 1.3.0
-====================================
-- Added: German translation
-- Added: MODx tags highlighting
-- Added: Ambiance and xcode themes
-- Added: less/scss syntax highlighting
-- Added: Fullwindow mode (Ctrl + F11)
-- Changed: Editor now ignores `wich_editor` setting. Set `use_editor` to false to use ACE for Resources.
+### Fixed
+- Fix fatal error when the resource does not exist
+ ([#23](https://github.com/modx-pro/modx-ace/pull/23))
 
+## [1.9.7] - 2026-02-21
 
-Ace 1.2.1
-====================================
-- Changed: Assets are moved to manager folder
-- Added: Font size setting
-- Added: "GitHub" theme
-- Added: Support of html5 drag'n'drop (accepting of dropped text)
-- Added: XML / HTML tag autoclosing
-- Fixed: broken en lexicon and php 5.3 incompatibility
+### Fixed
+- Installation/upgrade failing with "The location specified does not exist" and "Invalid or uninitialized Zip object" when preserving existing files (e.g. on MODX 3, SiteDash): set PREEXISTING_MODE to REMOVE_PREEXISTING so .preserved.zip is not created ([#22](https://github.com/modx-pro/modx-ace/issues/22))
 
+## [1.9.6] - 2026-02-16
 
-Ace 1.2.0
-====================================
-- Removed: Some unnecessary options
-- Changed: Editor options are moved to system settings
-- Fixed: Multiple little editor bugs
-- Added: Add missing "OnFileEditFormPrerender" event to MODx
-- Added: Multiline editing
-- Added: Advanced find/replace window
+### Added
+- Build script for MODX 2 and MODX 3 (Transport, auto-install, ClearCache)
+- Readable install log: [Ace] sections, ✓/✅ messages in resolver and build output
+- MODX root detection via `core/config/config.inc.php` when building from Extras/
+- Readme: building from MODX 2 for MODX 2 installs (optional; avoids post-pack patch)
 
+### Changed
+- PHP 8.1–8.5: null-safe array_merge, array key and file_get_contents handling in completions processors
+- Build config: 4-space indent, search order MODX_BASE_PATH → config.inc.php → modx.class.php
+- Resolver: PSR-12, structured log, recursive rmdir via closure
+- Package attributes and build output use [Ace] prefix and checkmarks
 
-Ace 1.1.0
-====================================
-- Fixed: Fatal error on document create event
-- Fixed: Changing of properties has no effect
-- Added: File edition support
-- Added: MODx tree elements drag'n'drop support
-- Added: Auto-assigning which_element_editor to Ace
+### Fixed
+- Unable to load processor "getResourceFields" in MODX 3 (issue #16): processors path and CamelCase file names
+- Auto-install in MODX 3: full class name `MODX\Revolution\Transport\modTransportPackage` for xPDO
+- E_DEPRECATED suppressed during CLI build (dynamic property in MODX core)
+- Package built on MODX 3 failing to install on MODX 2 (xPDOObjectVehicle could not be loaded): manifest vehicle class names patched to MODX 2 format (xpdo.transport.*) after pack; double-backslash and serialized manifest supported, array keys patched
 
+## [1.9.5] - 2025-10-18
 
-Ace 1.0.0
-====================================
-- Added: Plugin properties to adjust how Ace behaves
-- Initial commit
+### Added
+- Format code by Ctrl-Shift-B
+
+## [1.9.4] - 2024-02-23
+
+### Added
+- Links on GitHub [#13]
+- Alt+z keyboard shortcut to toggle word wrap [#15]
+
+### Fixed
+- focus() triggering for undefined [#14]
+
+## [1.9.3] - 2022-05-15
+
+### Changed
+- Move settings into an own file [#12]
+
+### Fixed
+- Ace TV input [#11]
+- PHP warning: Undefined variable $field [#10]
+
+## [1.9.2] - 2022
+
+### Added
+- TV input Ace field [#9]
+
+### Changed
+- Corrected search form [#8]
+
+## [1.9.1]
+
+### Fixed
+- Changed fonts
+
+### Changed
+- emmet.js with the support flex css styles and many other combinations
+
+## [1.9.0]
+
+### Added
+- Autodetecting file mode by modelist.js [#7]
+- New modes from ace-builds for version 1.2.0
+
+## [1.8.0]
+
+### Added
+- Autocompletion for php functions
+
+## [1.7.0]
+
+### Added
+- System setting "ace.grow"
+- System setting "ace.html_elements_mime"
+
+## [1.6.5]
+
+### Added
+- "Twig" syntax for support of Twig in chunks
+
+### Changed
+- Plugin is not static anymore
+
+## [1.6.4]
+
+### Fixed
+- Support of emmet in smarty mode. Again.
+
+## [1.6.3]
+
+### Fixed
+- Support of emmet in smarty mode
+
+## [1.6.2]
+
+### Added
+- "Markdown" syntax for mime type "text/x-markdown"
+
+### Fixed
+- Editor mode handling
+
+## [1.6.1]
+
+### Fixed
+- Work with enabled system setting "compress_js"
+
+## [1.6.0]
+
+### Added
+- "Smarty" syntax for support of Fenom in chunks
+
+### Changed
+- Ace updated to version 1.2.0
+
+## [1.5.1]
+
+### Fixed
+- Bug with narrowing of the textarea
+
+## [1.5.0]
+
+### Added
+- Editor height setting
+
+### Changed
+- Assets moved back to /assets/
+
+### Fixed
+- MODx tag completions (was completely broken)
+
+## [1.4.3]
+
+### Added
+- MODx tag completions (Ctrl+Space)
+
+### Fixed
+- Issue caused AjaxManager (MODx Manager speed booster plugin) tree drag'n'drop bug
+
+## [1.4.2]
+
+### Added
+- Undo coalescing
+- Drag delay for Mac (allow to start new selection inside current one)
+
+### Changed
+- Mac fullscreen command bound to Command+F12
+
+### Fixed
+- Use file extension of static chunks to detect code syntax
+
+## [1.4.1]
+
+### Added
+- Expandable snippets support (see ace.snippets setting)
+- Emmet wrap_with_abbreviation command (Alt+W)
+
+### Fixed
+- Tab handling
+- Emmet shortcut listing by Ctrl+Alt+H
+
+## [1.4.0]
+
+### Added
+- Emmet (Zen Coding) support
+- Terminal dark theme
+- Hotkey table (Ctrl+Alt+H)
+
+### Changed
+- Assets moved to /manager/assets/components/
+
+### Fixed
+- Resource overview fatal error
+
+## [1.3.3]
+
+### Added
+- PHP live syntax check
+- Chaos dark theme
+- Setting show_invisibles
+
+## [1.3.2]
+
+### Added
+- Tab settings (tab size, soft tab)
+- Full compatibility with AjaxManager extra
+
+### Fixed
+- Bug while installing Ace
+- Broken word_wrap setting
+
+## [1.3.1]
+
+### Changed
+- Plugin content now stored in static file
+
+## [1.3.0]
+
+### Added
+- German translation
+- MODx tags highlighting
+- Ambiance and xcode themes
+- less/scss syntax highlighting
+- Fullwindow mode (Ctrl+F11)
+
+### Changed
+- Editor now ignores `wich_editor` setting. Set `use_editor` to false to use ACE for Resources.
+
+## [1.2.1]
+
+### Added
+- Font size setting
+- "GitHub" theme
+- Support of html5 drag'n'drop (accepting dropped text)
+- XML/HTML tag autoclosing
+
+### Changed
+- Assets moved to manager folder
+
+### Fixed
+- Broken en lexicon and PHP 5.3 incompatibility
+
+## [1.2.0]
+
+### Added
+- Add missing "OnFileEditFormPrerender" event to MODx
+- Multiline editing
+- Advanced find/replace window
+
+### Changed
+- Editor options moved to system settings
+- Removed some unnecessary options
+
+### Fixed
+- Multiple little editor bugs
+
+## [1.1.0]
+
+### Added
+- File edition support
+- MODx tree elements drag'n'drop support
+- Auto-assigning which_element_editor to Ace
+
+### Fixed
+- Fatal error on document create event
+- Changing of properties has no effect
+
+## [1.0.0]
+
+### Added
+- Plugin properties to adjust how Ace behaves
+- Initial release

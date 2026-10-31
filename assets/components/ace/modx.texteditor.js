@@ -28,8 +28,20 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
 
     style: 'padding:0',
 
+    beautify : function() {
+        var val = this.editor.session.getValue();
+        var array = val.split(/\n/);
+        array[0] = array[0].trim();
+        val = array.join("\n");
+        val = html_beautify(val);
+        this.editor.session.setValue(val);
+    },
+
     initEvents : function(){
         Ext.ux.Ace.superclass.initEvents.call(this);
+        if (!this.editor) {
+            return;
+        }
         this.editor.on('focus', this.onFocus.bind(this));
         this.editor.on('blur', this.onBlur.bind(this));
     },
@@ -46,7 +58,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
             this.defaultAutoCreate = {
                 tag: "div",
                 cls: "x-form-textarea",
-                style:"width:100px;height:60px"
+                style:"width:100%;height:60px"
             };
         }
         Ext.ux.Ace.superclass.onRender.call(this, ct, position);
@@ -58,6 +70,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
         }
 
         this.editor = ace.edit(this.el.dom);
+        this.editor.$blockScrolling = Infinity;
 
         this.el.appendChild(this.valueHolder);
         this.el.dom.removeAttribute('name');
@@ -102,7 +115,13 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     onDestroy : function(){
-        this.editor.destroy();
+        if (MODx.ux.Ace.ColorPreview && this.editor) {
+            MODx.ux.Ace.ColorPreview.destroy(this.editor);
+        }
+        if (this.editor) {
+            this.editor.destroy();
+            this.editor = null;
+        }
         Ext.ux.Ace.superclass.onDestroy.call(this);
     },
 
@@ -115,7 +134,9 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     onResize : function(){
-        this.editor.resize(true);
+        if (this.editor) {
+            this.editor.resize(true);
+        }
     },
 
     doAutoSize : function(e){
@@ -123,36 +144,97 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     autoSize: function(){
-        if(!this.grow){
+        if (!this.editor) {
             return;
         }
-        var linesCount = this.editor.getSession().getDocument().getLength();
+        var linesCount = this.editor.getSession().getScreenLength();
         var lineHeight = this.editor.renderer.lineHeight;
         var scrollBar =  this.editor.renderer.scrollBar.getWidth();
         var bordersWidth = this.el.getBorderWidth('tb');
+        var bottomOffset = lineHeight*5+scrollBar;
 
-        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + scrollBar + bordersWidth, this.growMin));
-        if(h != this.lastHeight){
-            this.lastHeight = h;
-            this.el.setHeight(h);
+        var h = Math.min(this.growMax, Math.max(linesCount * lineHeight + bordersWidth + bottomOffset, this.growMin));
+        var heightChanged = h!=this.lastHeight;
+        if(this.grow && heightChanged){
+            this.setHeight(h);
             this.editor.resize();
             this.fireEvent("autosize", this, h);
         }
+
+        if(!this.editor.searchBox || heightChanged){
+            if(this.editor.searchBox)this.detectSearchBoxPosition(h);
+            else{
+                var that = this;
+                ace.config.loadModule("ace/ext/searchbox",function(m){
+                    m.Search(that.editor);
+                    that.editor.searchBox.hide();
+                    that.detectSearchBoxPosition(h);
+                });
+            }
+        }
+
+        if(heightChanged)this.lastHeight = h;
+    },
+
+    detectSearchBoxPosition : function(editorHeight){
+        var triggerOffset = 150;
+        var defaultStyles={
+            position:null
+            ,bottom:null
+            ,top:null
+            ,borderRadius:null
+        };
+        var fixedStyles={
+            position:'fixed'
+            ,bottom:'0'
+            ,top:'initial'
+            ,borderRadius:'5px 0px 0px 0'
+        };
+        if(!this.isFullscreen&&editorHeight>=(window.innerHeight-triggerOffset))Ext.apply(this.editor.searchBox.element.style,fixedStyles);
+        else Ext.apply(this.editor.searchBox.element.style,defaultStyles);
     },
 
     setSize : function(width, height){
         Ext.ux.Ace.superclass.setSize.apply(this, arguments);
-        this.editor.resize(true);
+        if (this.editor) {
+            this.editor.resize(true);
+        }
     },
 
     getValue : function (){
+        if (this.editor) {
+            this.valueHolder.value = this.editor.getSession().getValue();
+        }
         return this.valueHolder.value;
     },
 
     setValue : function (value){
         if (this.editor) {
-            this.editor.getSession().setValue(value);
-        } else {
+            var session = this.editor.getSession();
+            var current = session.getValue();
+            var utils = (typeof MODx !== 'undefined' && MODx.ux)
+                ? (MODx.ux.AceUtils || (MODx.ux.Ace && MODx.ux.Ace.Utils))
+                : null;
+            // EditSession.setValue() always resets the undo manager (#47).
+            // MODX modScript::set() also strips a leading <?php and a trailing
+            // ?> before it returns the saved snippet or plugin (#48). Keep the
+            // buffer when that wrapper is the only difference.
+            var keep = current === value || (utils && utils.shouldKeepEditorAfterModxPhpStrip(
+                current,
+                value,
+                this.mimeType
+            ));
+            if (!keep) {
+                session.setValue(value);
+                current = value;
+            }
+            if (this.valueHolder) {
+                this.valueHolder.value = current;
+            }
+            this.value = current;
+            return;
+        }
+        if (this.valueHolder) {
             this.valueHolder.value = value;
         }
         this.value = value;
@@ -199,7 +281,7 @@ Ext.ux.Ace = Ext.extend(Ext.form.TextField,  {
     },
 
     focus: function (){
-        this.editor.focus();
+        (this.editor || this.valueHolder).focus();
     },
 
     blur: function (){
@@ -235,14 +317,22 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
         MODx.ux.Ace.superclass.initComponent.call(this);
         var config = ace.require("ace/config");
         var acePath = MODx.config['assets_url'] + 'components/ace/ace';
+        config.set('basePath', acePath);
         config.set('modePath', acePath);
         config.set('themePath', acePath);
         config.set('workerPath', acePath);
+        if(MODx.config['ace.grow']!==undefined&&MODx.config['ace.grow']!==''){
+            this.grow = true;
+            this.growMax = parseInt(MODx.config['ace.grow'])||Infinity;
+            this.growMin = this.height;
+        }
         this.windows = [];
     },
 
     onRender : function (ct, position) {
         MODx.ux.Ace.superclass.onRender.call(this, ct, position);
+
+        this.editor.setBehavioursEnabled(MODx.ux.Ace.isAutoCloseTagsEnabled());
 
         var TokenIterator = ace.require("ace/token_iterator").TokenIterator;
         var userAgent = ace.require("ace/lib/useragent");
@@ -266,10 +356,14 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
 
         this.setMimeType(this.mimeType);
 
+        if (MODx.ux.Ace.ColorPreview) {
+            MODx.ux.Ace.ColorPreview.init(this.editor, this.mimeType);
+        }
+
         if (!MODx.ux.Ace.initialized) {
             var style = "\
-                .ace_maximized {position: fixed; border: none; top: 0; left: 0; right: 0; bottom: 0; width: auto !important; height: auto !important;z-index: 100}\
-                .ace_maximizer {position: absolute; width: 16px; height: 16px; top: 3px; right: 3px; opacity: 0.7; z-index: 10; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEVmrBxkqxpjqhlkqxprryFnrB1kqxtkqxp6uzJiqRhZow9kqxpmrBxlrBtnrBxjqhlmrBxjqhptsSNkqhplqxt4tyxkqhlmrB1mrBx5uzJmrBxorR9orR5nrB1kqhlorR14uS5mrRxhqBhmrR1aoxBlqxt3titusiRlqxpiqRd4ty1rrh9hqBdjqxp3tSpaow9mrR15ujBorh5lrBxapRFmrBxkqhpjqhp5uzBhqRdnrB1rsCJlrBt6vDNorh93tipmqxxhqRhapBFbpRJnrR1mrB14uC1usiVnrB1apRFhqReq1VmLxUGv5Gyt3GOs22Cm0FKn2FyUzUyRykev4WmUz1CUy0mw5G6RzEmr11xusSOSy0iOxkKPx0Or2V6CwTuo3GGUz0+Sy0mu5W6Ry0mq1lptsCORy0iNx0OAvDOo2V5/vDOCwDmPxkOOy0mj0lWl1lqu4Gap1Viv4mms2l+s3WSPx0SKwDtusiWCwTqQxUGSyUaRykiAvDSp2l+Qx0QdWpRIAAAAS3RSTlMAAAAa4gAAlfAZMRLhuQCV1ZXwGgDwlQCy8MzY2swS2PDqEdUisvDwABn64hEA8CLh+tq5MeoAAPAZ4eKy+tr6uREiMdXq8PDqIhHgP7bQAAAA4ElEQVR42mOw5uBw52cAA351CwUWBttk30p9iIBKTmGcFgNHeEKwlBIfAwOrjmxNQaQoQ0V8TVa9PDMDg7B0RF1MdhSDGJdLfWqVqS6Ta5BfvYAzO1Arp0xVOS8bo3FGtAwnxDBuHhsRBgYNVR5uBihgZAOTTDA+AxMjiDSDCYhzW0kAtTBKGMiJgwUs7cJ8eBkZHfISjTSBXDEu5RT/akVzJo/Q4mgBE3aGisr0OqjDkupyM9MYJEMCY6UcQU73ki3LL1JjMCwtqfWEmO5U6x1gz8Ci4CYkCBEQFBLV0wYAXu4m8P20SwoAAAAASUVORK5CYII=)}\
+                .ace_maximized {position: fixed; border: none; top: 60px; left: 70px; right: 3px; bottom: 3px; width: auto !important; height: auto !important; margin: 0; z-index: 12000}\
+                .ace_maximizer {position: absolute; width: 16px; height: 16px; top: 3px; right: 3px; opacity: 0.7; z-index: 10; cursor: pointer; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABgFBMVEVmrBxkqxpjqhlkqxprryFnrB1kqxtkqxp6uzJiqRhZow9kqxpmrBxlrBtnrBxjqhlmrBxjqhptsSNkqhplqxt4tyxkqhlmrB1mrBx5uzJmrBxorR9orR5nrB1kqhlorR14uS5mrRxhqBhmrR1aoxBlqxt3titusiRlqxpiqRd4ty1rrh9hqBdjqxp3tSpaow9mrR15ujBorh5lrBxapRFmrBxkqhpjqhp5uzBhqRdnrB1rsCJlrBt6vDNorh93tipmqxxhqRhapBFbpRJnrR1mrB14uC1usiVnrB1apRFhqReq1VmLxUGv5Gyt3GOs22Cm0FKn2FyUzUyRykev4WmUz1CUy0mw5G6RzEmr11xusSOSy0iOxkKPx0Or2V6CwTuo3GGUz0+Sy0mu5W6Ry0mq1lptsCORy0iNx0OAvDOo2V5/vDOCwDmPxkOOy0mj0lWl1lqu4Gap1Viv4mms2l+s3WSPx0SKwDtusiWCwTqQxUGSyUaRykiAvDSp2l+Qx0QdWpRIAAAAS3RSTlMAAAAa4gAAlfAZMRLhuQCV1ZXwGgDwlQCy8MzY2swS2PDqEdUisvDwABn64hEA8CLh+tq5MeoAAPAZ4eKy+tr6uREiMdXq8PDqIhHgP7bQAAAA4ElEQVR42mOw5uBw52cAA351CwUWBttk30p9iIBKTmGcFgNHeEKwlBIfAwOrjmxNQaQoQ0V8TVa9PDMDg7B0RF1MdhSDGJdLfWqVqS6Ta5BfvYAzO1Arp0xVOS8bo3FGtAwnxDBuHhsRBgYNVR5uBihgZAOTTDA+AxMjiDSDCYhzW0kAtTBKGMiJgwUs7cJ8eBkZHfISjTSBXDEu5RT/akVzJo/Q4mgBE3aGisr0OqjDkupyM9MYJEMCY6UcQU73ki3LL1JjMCwtqfWEmO5U6x1gz8Ci4CYkCBEQFBLV0wYAXu4m8P20SwoAAAAASUVORK5CYII=)}\
                 .ace_maximizer:hover {opacity: 1}\
             ";
             new MODx.ux.Ace.CodeCompleter();
@@ -296,6 +390,9 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             onChangeMode({}, this.editor);
 
             var Emmet = ace.require("ace/ext/emmet");
+            Emmet.isSupportedMode = function(modeId) {
+                return modeId && /css|less|scss|sass|stylus|html|php|twig|ejs|handlebars|smarty/.test(modeId);
+            };
             var net = ace.require('ace/lib/net');
             net.loadScript(MODx.config['assets_url'] + 'components/ace/emmet/emmet.js', function() {
                 Emmet.setCore(window.emmet);
@@ -331,22 +428,171 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
             exec: this.fullScreen.bind(this),
             readOnly: true
         });
+
+        this.editor.commands.addCommand({
+            name: "updatewrapmode",
+            bindKey: {win: "Alt-Z", mac: "Alt-Z"},
+            exec: this.updatewrapmode.bind(this),
+            readOnly: true
+        });
+
+        this.editor.commands.addCommand({
+            name: "beautify",
+            bindKey: {win: "Ctrl-Shift-B", mac: "Ctrl-Shift-B"},
+            exec: this.beautify.bind(this),
+            readOnly: true
+        });
+
     },
 
     fullScreen : function() {
         if (this.isFullscreen){
             this.maximizer.title = this.maximizeTitle;
             this.el.removeClass('ace_maximized');
+            this.clearFullscreenInsets();
+            this.restoreAceFromFullscreenBody();
         } else {
+            this.moveAceToFullscreenBody();
             this.el.addClass('ace_maximized');
+            this.applyFullscreenInsets();
+            this.bindFullscreenResize();
             this.maximizer.title = this.minimizeTitle;
         }
         this.isFullscreen = !this.isFullscreen;
         this.onResize();
+        this.syncAceOwnerLayout();
+    },
+
+    applyFullscreenInsets : function() {
+        if (!this.el || !this.el.dom) {
+            return;
+        }
+        var utils = (typeof MODx !== 'undefined' && MODx.ux)
+            ? (MODx.ux.AceUtils || (MODx.ux.Ace && MODx.ux.Ace.Utils))
+            : null;
+        var header = document.getElementById('modx-header');
+        var buttons = document.getElementById('modx-action-buttons');
+        var insets = utils && utils.fullscreenInsets
+            ? utils.fullscreenInsets(
+                header ? header.getBoundingClientRect() : null,
+                buttons ? buttons.getBoundingClientRect() : null
+            )
+            : {top: 60, left: 70};
+        this.el.dom.style.top = insets.top + 'px';
+        this.el.dom.style.left = insets.left + 'px';
+    },
+
+    clearFullscreenInsets : function() {
+        if (!this.el || !this.el.dom) {
+            return;
+        }
+        this.el.dom.style.top = '';
+        this.el.dom.style.left = '';
+    },
+
+    bindFullscreenResize : function() {
+        if (this._aceFsResize || !window.Ext || !Ext.EventManager) {
+            return;
+        }
+        this._aceFsResize = function() {
+            if (!this.isFullscreen) {
+                return;
+            }
+            this.applyFullscreenInsets();
+            this.onResize();
+        }.bind(this);
+        Ext.EventManager.onWindowResize(this._aceFsResize, this);
+    },
+
+    /**
+     * Fullscreen must sit under document.body with a high z-index. A low z-index (formerly 100)
+     * and staying inside #modx-content cannot paint above sibling panels (e.g. resource TVs column)
+     * due to stacking contexts — see modx-ace#18 and modxcms/revolution#16778 discussion.
+     */
+    moveAceToFullscreenBody : function() {
+        if (this._aceFullscreenRestore) {
+            return;
+        }
+        var dom = this.el.dom;
+        this._aceFullscreenRestore = {
+            parent: dom.parentNode,
+            next: dom.nextSibling
+        };
+        // Keep the named hidden input inside the form while the editor UI is on body.
+        // MODX Ctrl+S collects field values from the form DOM; reparenting would submit stale content (#25).
+        if (this.valueHolder && this.valueHolder.parentNode === dom) {
+            dom.removeChild(this.valueHolder);
+            if (this._aceFullscreenRestore.next && this._aceFullscreenRestore.next.parentNode === this._aceFullscreenRestore.parent) {
+                this._aceFullscreenRestore.parent.insertBefore(this.valueHolder, this._aceFullscreenRestore.next);
+            } else {
+                this._aceFullscreenRestore.parent.appendChild(this.valueHolder);
+            }
+        }
+        document.body.appendChild(dom);
+    },
+
+    restoreAceFromFullscreenBody : function() {
+        var r = this._aceFullscreenRestore;
+        if (!r || !r.parent) {
+            this._aceFullscreenRestore = null;
+            return;
+        }
+        var dom = this.el.dom;
+        if (this.valueHolder && this.valueHolder.parentNode !== dom) {
+            dom.appendChild(this.valueHolder);
+        }
+        if (r.next && r.next.parentNode === r.parent) {
+            r.parent.insertBefore(dom, r.next);
+        } else {
+            r.parent.appendChild(dom);
+        }
+        this._aceFullscreenRestore = null;
+    },
+
+    syncAceOwnerLayout : function() {
+        var oc = this.ownerCt;
+        if (oc && typeof oc.doLayout === 'function') {
+            oc.doLayout.defer(1, oc);
+        }
+    },
+
+    onDestroy : function() {
+        if (this._aceFsResize && window.Ext && Ext.EventManager) {
+            Ext.EventManager.removeResizeListener(this._aceFsResize, this);
+            this._aceFsResize = null;
+        }
+        if (this.isFullscreen && this.el) {
+            this.el.removeClass('ace_maximized');
+            this.clearFullscreenInsets();
+            this.restoreAceFromFullscreenBody();
+            this.isFullscreen = false;
+        }
+        MODx.ux.Ace.superclass.onDestroy.call(this);
+    },
+
+    updatewrapmode : function() {
+        if (this.useWrapMode){
+            this.setUseWrapMode(false);
+        } else {
+            this.setUseWrapMode(true);
+        }
+        this.useWrapMode = !this.useWrapMode;
     },
 
     setMimeType : function (mimeType){
-        this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        if(mimeType.match(/^@FILE:/)){
+            var config = ace.require('ace/config');
+            var modelist = ace.require("ace/ext/modelist");
+            var filePath = mimeType.replace(/^@FILE:/,'');
+            config.loadModule(["ext", 'ace/ext/modelist'], function(module) {
+                var mode = module.getModeForPath(filePath).mode;
+                mode = mode?mode.replace('ace/mode/',''):'text';
+                this.setMode( mode );
+            }.bind(this));
+        }
+        else{
+            this.setMode( MODx.ux.Ace.mimeTypes[mimeType] || 'text' );
+        }
     },
 
     showGotoLineWindow : function(){
@@ -424,16 +670,231 @@ MODx.ux.Ace = Ext.extend(Ext.ux.Ace, {
     }
 });
 
-MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
+if (MODx.ux.AceUtils) {
+    MODx.ux.Ace.Utils = MODx.ux.AceUtils;
+}
+
+MODx.ux.Ace.isAutoCloseTagsEnabled = function() {
+    var utils = MODx.ux.Ace.Utils || MODx.ux.AceUtils;
+    return utils.parseBoolSetting(MODx.config['ace.auto_close_tags'], true);
+};
+
+MODx.ux.Ace.isDraftRestoreEnabled = function() {
+    var utils = MODx.ux.Ace.Utils || MODx.ux.AceUtils;
+    return utils.parseBoolSetting(MODx.config['ace.draft_restore'], false);
+};
+
+MODx.ux.Ace.DraftManager = {
+    TTL_MS: 7 * 24 * 60 * 60 * 1000,
+    debounceMs: 500,
+    _boundKeys: {},
+
+    getStorageKey: function(field) {
+        var utils = MODx.ux.Ace.Utils || MODx.ux.AceUtils;
+        var action = (MODx.request && MODx.request.a) ? String(MODx.request.a) : 'manager';
+        var id = (MODx.request && MODx.request.id) ? String(MODx.request.id) : 'new';
+        var name = field.name || field.id || 'field';
+        if (!field.name && field.id) {
+            name = field.id;
+        }
+        return utils.draftStorageKey(action, name, id);
+    },
+
+    findFormPanel: function(field) {
+        if (field && field.findParentBy) {
+            return field.findParentBy(function(c) {
+                return c && c.getForm && c.getForm();
+            });
+        }
+        return Ext.getCmp('modx-panel-resource')
+            || Ext.getCmp('modx-panel-chunk')
+            || Ext.getCmp('modx-panel-template')
+            || Ext.getCmp('modx-panel-snippet')
+            || Ext.getCmp('modx-panel-plugin')
+            || Ext.getCmp('modx-panel-file')
+            || null;
+    },
+
+    readDraft: function(key) {
+        try {
+            var raw = localStorage.getItem(key);
+            if (!raw) {
+                return null;
+            }
+            var data = JSON.parse(raw);
+            if (!data || typeof data.value !== 'string') {
+                return null;
+            }
+            if (data.ts && (Date.now() - data.ts) > this.TTL_MS) {
+                localStorage.removeItem(key);
+                return null;
+            }
+            return data;
+        } catch (e) {
+            return null;
+        }
+    },
+
+    writeDraft: function(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify({value: value, ts: Date.now()}));
+        } catch (e) {}
+    },
+
+    clearDraft: function(key) {
+        try {
+            localStorage.removeItem(key);
+        } catch (e) {}
+        delete this._boundKeys[key];
+    },
+
+    bindClearOnSave: function(key, field, textEditor) {
+        var self = this;
+        var clear = function() {
+            self.clearDraft(key);
+        };
+
+        if (textEditor) {
+            textEditor.aceDraftKey = key;
+        }
+
+        var panel = this.findFormPanel(field);
+        if (!panel) {
+            return;
+        }
+        panel.on('success', clear);
+        var form = panel.getForm && panel.getForm();
+        if (form) {
+            form.on('actioncomplete', function(f, action) {
+                if (action && action.result && action.result.success) {
+                    clear();
+                }
+            });
+        }
+    },
+
+    bind: function(field, textEditor) {
+        if (!MODx.ux.Ace.isDraftRestoreEnabled() || field.readOnly === true) {
+            return;
+        }
+        if (!textEditor || !textEditor.editor) {
+            return;
+        }
+
+        var self = this;
+        var key = this.getStorageKey(field);
+        if (this._boundKeys[key]) {
+            return;
+        }
+        this._boundKeys[key] = true;
+
+        var initialValue = textEditor.getValue();
+        var draft = this.readDraft(key);
+
+        // Offer restore only when draft differs and is non-empty (avoid noise for intentional clear).
+        var utils = MODx.ux.Ace.Utils || MODx.ux.AceUtils;
+        if (draft && utils.shouldOfferDraftRestore(draft.value, initialValue)) {
+            this.showRestoreBanner(textEditor, key, draft.value);
+        }
+
+        var saveTimer = null;
+        textEditor.editor.getSession().on('change', function() {
+            if (saveTimer) {
+                clearTimeout(saveTimer);
+            }
+            saveTimer = setTimeout(function() {
+                self.writeDraft(key, textEditor.getValue());
+            }, self.debounceMs);
+        });
+
+        this.bindClearOnSave(key, field, textEditor);
+    },
+
+    showRestoreBanner: function(textEditor, key, draftValue) {
+        var banner = document.createElement('div');
+        banner.className = 'ace-draft-restore-banner';
+        banner.style.cssText = 'padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;margin-bottom:4px;font-size:12px;';
+        banner.appendChild(document.createTextNode(_('ui_ace.draft_restore_prompt') + ' '));
+
+        var restoreLink = document.createElement('a');
+        restoreLink.href = '#';
+        restoreLink.className = 'ace-draft-restore-yes';
+        restoreLink.appendChild(document.createTextNode(_('ui_ace.draft_restore_yes')));
+        restoreLink.onclick = function(e) {
+            e.preventDefault();
+            textEditor.setValue(draftValue);
+            if (banner.parentNode) {
+                banner.parentNode.removeChild(banner);
+            }
+        };
+
+        var discardLink = document.createElement('a');
+        discardLink.href = '#';
+        discardLink.className = 'ace-draft-restore-no';
+        discardLink.appendChild(document.createTextNode(_('ui_ace.draft_restore_discard')));
+        discardLink.onclick = function(e) {
+            e.preventDefault();
+            MODx.ux.Ace.DraftManager.clearDraft(key);
+            if (banner.parentNode) {
+                banner.parentNode.removeChild(banner);
+            }
+        };
+
+        banner.appendChild(restoreLink);
+        banner.appendChild(document.createTextNode(' | '));
+        banner.appendChild(discardLink);
+        textEditor.el.dom.parentNode.insertBefore(banner, textEditor.el.dom);
+    }
+};
+
+MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags, options) {
+    options = options || {};
     var textArea = Ext.getCmp(id);
     if (!textArea) {
         // Workaround for File Update panel (fix issue, caused by wrong event order)
         return setTimeout(function() {
-            var textArea = Ext.getCmp(id);
-            if (textArea)
-                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags);
-        });
+            if (Ext.getCmp(id)) {
+                MODx.ux.Ace.replaceComponent(id, mimeType, modxTags, options);
+            }
+        }, 50);
     }
+    if (textArea.aceEditor || textArea._aceReplacePending) {
+        return;
+    }
+
+    // Async cache buffer on resource overview only (#28). Do not delay empty new chunks/files.
+    var utils = MODx.ux.Ace.Utils || MODx.ux.AceUtils;
+    if (utils.shouldWaitForAsyncBuffer(id) && options.waitForValue !== false) {
+        var value = textArea.getValue();
+        if (!value) {
+            var panel = Ext.getCmp('modx-panel-resource-data');
+            if (panel) {
+                textArea._aceReplacePending = true;
+                var replaceWhenReady = function() {
+                    textArea._aceReplacePending = false;
+                    if (textArea.aceEditor) {
+                        return;
+                    }
+                    MODx.ux.Ace.replaceComponent(id, mimeType, modxTags, {waitForValue: false});
+                };
+                if (panel.rendered && panel.getForm) {
+                    var pagetitleField = panel.getForm().findField('pagetitle');
+                    if (pagetitleField && pagetitleField.getValue()) {
+                        return replaceWhenReady();
+                    }
+                }
+                panel.on('ready', replaceWhenReady, null, {single: true});
+                return;
+            }
+            var attempts = options._attempts || 0;
+            if (attempts < 50) {
+                return setTimeout(function() {
+                    MODx.ux.Ace.replaceComponent(id, mimeType, modxTags, Ext.applyIf({_attempts: attempts + 1}, options));
+                }, 100);
+            }
+        }
+    }
+
     var textEditor = MODx.load({
         xtype: 'modx-texteditor',
         enableKeyEvents: true,
@@ -449,9 +910,29 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
     textArea.el.dom.removeAttribute('name');
     textArea.el.setStyle('display', 'none');
     textEditor.render(textArea.el.dom.parentNode);
+    textArea.aceEditor = textEditor;
+    textArea._aceReplacePending = false;
+    textArea.getValue = function() {
+        return textEditor.getValue();
+    };
+    textArea.setValue = function(value) {
+        textEditor.setValue(value);
+        return textArea;
+    };
     textArea.setSize = function(){textEditor.setSize.apply(textEditor, arguments)};
     textEditor.editor.on('change', function(e){textArea.fireEvent('change', e);});
+    if (!MODx.onSaveEditor) {
+        MODx.onSaveEditor = function(fld) {
+            if (fld && fld.aceEditor) {
+                fld.setValue(fld.aceEditor.getValue());
+                if (fld.aceEditor.aceDraftKey) {
+                    MODx.ux.Ace.DraftManager.clearDraft(fld.aceEditor.aceDraftKey);
+                }
+            }
+        };
+    }
     textArea.on('destroy', function() {textEditor.destroy();});
+    MODx.ux.Ace.DraftManager.bind(textArea, textEditor);
     if (!modxTags)
         return;
     var dropTarget = MODx.load({
@@ -470,11 +951,13 @@ MODx.ux.Ace.replaceComponent = function(id, mimeType, modxTags) {
 
 MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
     textAreas.forEach(function(textArea){
+        var fieldName = textArea.name;
+        var fieldId = textArea.id;
         var editor = MODx.load({
             xtype: 'modx-texteditor',
             width: 'auto',
             height: parseInt(textArea.style.height) || 200,
-            name: textArea.name,
+            name: fieldName,
             value: textArea.value,
             mimeType: mimeType || 'text/html',
             modxTags: true
@@ -485,7 +968,48 @@ MODx.ux.Ace.replaceTextAreas = function(textAreas, mimeType) {
 
         editor.render(textArea.parentNode);
         editor.editor.on('change', function(e){ MODx.fireResourceFormChange() });
+        MODx.ux.Ace.DraftManager.bind({name: fieldName, id: fieldId, readOnly: textArea.readOnly}, editor);
     });
+};
+
+MODx.ux.Ace.replaceTextArea = function(id, config) {
+    config = config || {};
+
+    var textAreaElement=Ext.get(id);
+    if(textAreaElement === null){
+        return undefined;
+    }
+    var textArea=textAreaElement.dom;
+    var fieldName = textArea.name;
+    var fieldId = textArea.id;
+
+    Ext.applyIf(config,{
+        xtype: 'modx-texteditor',
+        width: 'auto',
+        height: parseInt(textArea.style.height) || 200,
+        name: fieldName,
+        value: textArea.value,
+        mimeType: 'text/html',
+        modxTags: true
+    });
+
+    var editor = MODx.load(config);
+
+    textArea.name = '';
+    textArea.style.display = 'none';
+
+    editor.render(textArea.parentNode);
+    editor.editor.on('change', function(e){ MODx.fireResourceFormChange() });
+    MODx.ux.Ace.DraftManager.bind({name: fieldName, id: fieldId, readOnly: textArea.readOnly}, editor);
+    new IntersectionObserver(function(){
+        editor.editor.resize(true);
+        var tabs = Ext.get('modx-tv-tabs');
+        if(tabs !== null){
+            tabs.dom.scrollTop=0;
+        }
+    }).observe(textArea.parentNode);
+
+    return editor;
 };
 
 MODx.ux.Ace.createModxMixedMode = function(Mode) {
@@ -704,6 +1228,10 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 
         this.HighlightRules = ModxMixedHighlightRules;
 
+        if (MODx.ux.Ace.isAutoCloseTagsEnabled()) {
+        if (typeof this.$behaviour == 'undefined') {
+            var Behaviour = ace.require("ace/mode/behaviour").Behaviour;
+        }
         this.$behaviour = Object.create(this.$behaviour || new Behaviour());
 
         this.$behaviour.add("brackets", "insertion", function (state, action, editor, session, text) {
@@ -810,6 +1338,7 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
                 }
             }
         });
+        }
     }
     ModxMixedMode.prototype = Object.create(Mode.prototype, {
         constructor: {value: ModxMixedMode}
@@ -818,21 +1347,24 @@ MODx.ux.Ace.createModxMixedMode = function(Mode) {
 };
 
 MODx.ux.Ace.mimeTypes = {
-     'text/x-php'            : 'php'
-    ,'application/x-php'     : 'php'
-    ,'text/x-sql'            : 'sql'
-    ,'text/x-scss'           : 'scss'
-    ,'text/x-less'           : 'less'
-    ,'text/xml'              : 'xml'
-    ,'application/xml'       : 'xml'
-    ,'image/svg+xml'         : 'svg'
-    ,'text/html'             : 'html'
-    ,'application/xhtml+xml' : 'html'
-    ,'text/javascript'       : 'javascript'
-    ,'application/javascript': 'javascript'
-    ,'application/json'      : 'json'
-    ,'text/css'              : 'css'
-    ,'text/plain'            : 'text'
+    'text/x-smarty'         : 'smarty',
+    'text/html'             : 'html',
+    'application/xhtml+xml' : 'html',
+    'text/css'              : 'css',
+    'text/x-scss'           : 'scss',
+    'text/x-less'           : 'less',
+    'image/svg+xml'         : 'svg',
+    'application/xml'       : 'xml',
+    'text/xml'              : 'xml',
+    'text/javascript'       : 'javascript',
+    'application/javascript': 'javascript',
+    'application/json'      : 'json',
+    'text/x-php'            : 'php',
+    'application/x-php'     : 'php',
+    'text/x-sql'            : 'sql',
+    'text/x-markdown'       : 'markdown',
+    'text/plain'            : 'text',
+    'text/x-twig'           : 'twig'
 };
 
 MODx.ux.Ace.initialized = false;
@@ -879,7 +1411,7 @@ MODx.ux.Ace.CodeCompleter = function() {
             return {
                 value: meta == 'chunk' ? '$' + completion : completion,
                 caption: completion,
-                meta: meta,
+                meta: meta == 'function' ? completions[completion] : meta,
                 description: completions[completion],
                 score: 1000
             };
@@ -986,17 +1518,29 @@ MODx.ux.Ace.CodeCompleter = function() {
 
     langTools.addCompleter({
         getCompletions: function(editor, session, pos, prefix, callback) {
-            var iterator = new TokenIterator(session, pos.row, pos.column);
+            var iterator = new TokenIterator(session, pos.row, pos.column),
+                parsedInfo = parseTag(iterator),
+                completionType = 'function',
+                classKey, objectName;
 
-            var parsedInfo = parseTag(iterator);
-            if (!parsedInfo)
-                return callback(null);
-
-            var completionType = parsedInfo.completionType;
-            var classKey = parsedInfo.classKey;
-            var objectName = parsedInfo.objectName;
+            if (parsedInfo) {
+                completionType = parsedInfo.completionType;
+                classKey = parsedInfo.classKey;
+                objectName = parsedInfo.objectName;
+            }
 
             switch (completionType) {
+                case 'function' :
+                    gatherCompletions([
+                        {
+                            cacheKey: 'function',
+                            requestParams: {action: 'getFunctions'},
+                            prepare: function(completions) {
+                                return prepareCompletions(completions, 'function');
+                            }
+                        }
+                    ], callback);
+                    break;
                 case 'propertyset':
                     break;
                 case 'lexiconentry':

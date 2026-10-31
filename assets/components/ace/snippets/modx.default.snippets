@@ -1,0 +1,66 @@
+# Default MODX Tab snippets for Ace (ace.snippets).
+# Adapted from common MODX Revolution patterns.
+
+snippet getr
+	[[!getResources? &parents=`${1}` &limit=`${2:10}` &tpl=`${3}`]]
+
+snippet getResources
+	[[!getResources? &parents=`${1}` &limit=`${2:10}` &tpl=`${3}`]]
+
+snippet pdoResources
+	[[pdoResources? &parents=`${1}` &limit=`${2:10}` &tpl=`${3}`]]
+
+snippet pdoMenu
+	[[pdoMenu? &parents=`${1:0}` &level=`${2:1}` &tpl=`${3}`]]
+
+snippet getPage
+	[[!getPage? &id=`${1}`]]
+
+snippet wayfinder
+	[[!Wayfinder? &startId=`${1:0}` &level=`${2}`]]
+
+snippet chunk
+	[[$${1}]]
+
+snippet snippet
+	[[${1}]]
+
+snippet uncache
+	[[!${1}]]
+
+snippet link
+	[[~${1}]]
+
+snippet tv
+	[[*${1}]]
+
+snippet placeholder
+	[[+${1}]]
+
+snippet setting
+	[[++${1}]]
+
+snippet formit
+	[[!FormIt?
+	    &hooks=`${1}`
+	    &validate=`${2}`
+	    &successTpl=`${3}`
+	]]
+
+snippet getImageList
+	[[!getImageList? &tvname=`${1}` &tpl=`${2}`]]
+
+snippet babelLinks
+	[[!babelLinks? &tpl=`${1}`]]
+
+snippet if
+	[[*${1}:is=`${2}`:then=`${3}`:else=`${4}`]]
+
+snippet url
+	[[~${1}? &${2}=`${3}`]]
+
+snippet script
+	<script src="${1}"></script>
+
+snippet style
+	<link rel="stylesheet" href="${1}">

@@ -1,0 +1,11 @@
+{
+  "name": "modx-ace",
+  "private": true,
+  "description": "Ace code editor for MODX Revolution",
+  "scripts": {
+    "test": "node --test tests/js/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
